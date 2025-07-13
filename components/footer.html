@@ -1,0 +1,14 @@
+<footer class="bg-dark text-light py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p>&copy; <span id="copyright-year"></span> Family Value. A proud member of the Salatiso Ecosystem.</p>
+        <div class="mt-4 flex justify-center gap-4">
+            <a href="#" class="hover:text-primary">Privacy Policy</a>
+            <span class="text-gray-500">|</span>
+            <a href="#" class="hover:text-primary">Terms of Service</a>
+        </div>
+    </div>
+    <script>
+        const yearEl = document.getElementById('copyright-year');
+        if(yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+</footer>

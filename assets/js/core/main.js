@@ -8,102 +8,66 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadComponents() {
-    // --- Load Header ---
-    const headerPlaceholder = document.getElementById('header-placeholder');
-    if (headerPlaceholder) {
-        try {
-            const response = await fetch('components/header.html');
-            const data = await response.text();
-            headerPlaceholder.innerHTML = data;
-            postHeaderLoad();
-        } catch (error) {
-            console.error('Error loading header:', error);
-        }
-    }
-    
-    // --- Load Footer ---
-    const footerPlaceholder = document.getElementById('footer-placeholder');
-     if (footerPlaceholder) {
-        try {
-            const response = await fetch('components/footer.html');
-            const data = await response.text();
-            footerPlaceholder.innerHTML = data;
-        } catch (error) {
-            console.error('Error loading footer:', error);
-        }
-    }
+    const componentMap = {
+        'header-placeholder': 'components/header.html',
+        'footer-placeholder': 'components/footer.html',
+        'modals-placeholder': 'components/modals.html',
+        'main-content-container': 'components/main-sections.html'
+    };
 
-    // --- Load Modals ---
-    const modalsPlaceholder = document.getElementById('modals-placeholder');
-    if (modalsPlaceholder) {
-        try {
-            const response = await fetch('components/modals.html');
-            const data = await response.text();
-            modalsPlaceholder.innerHTML = data;
-        } catch (error) {
-            console.error('Error loading modals:', error);
+    for (const [placeholderId, filePath] of Object.entries(componentMap)) {
+        const placeholder = document.getElementById(placeholderId);
+        if (placeholder) {
+            try {
+                const response = await fetch(filePath);
+                if (!response.ok) throw new Error(`Component not found: ${filePath}`);
+                const data = await response.text();
+                placeholder.innerHTML = data;
+                console.log(`${filePath} loaded successfully.`);
+            } catch (error) {
+                console.error(`Error loading component from ${filePath}:`, error);
+                placeholder.innerHTML = `<p class="text-red-500 text-center">Error loading content.</p>`;
+            }
         }
     }
-
-     // --- Load Page Sections ---
-    const mainContent = document.getElementById('main-content-container');
-    if(mainContent) {
-        try {
-            const response = await fetch('components/main-sections.html');
-            const data = await response.text();
-            mainContent.innerHTML = data;
-            // Re-run navigation setup after content is loaded
-            setupNavigation();
-        } catch (error) {
-             console.error('Error loading main sections:', error);
-        }
-    }
+    // Post-load initializations
+    postLoadSetup();
 }
 
-function postHeaderLoad() {
+function postLoadSetup() {
+    // Load Logo
     fetch('assets/svg/logo.svg')
         .then(res => res.text())
         .then(data => {
             const logoContainer = document.getElementById('logo-container');
             if (logoContainer) logoContainer.innerHTML = data;
-        });
+        }).catch(console.error);
     
     // Attach Modal Listeners
-    document.getElementById('login-btn').addEventListener('click', (e) => { e.preventDefault(); openModal('loginModal'); });
-    document.getElementById('signup-btn').addEventListener('click', (e) => { e.preventDefault(); openModal('signupModal'); });
+    document.getElementById('login-btn')?.addEventListener('click', (e) => { e.preventDefault(); openModal('loginModal'); });
+    document.getElementById('signup-btn')?.addEventListener('click', (e) => { e.preventDefault(); openModal('signupModal'); });
     const loginMobile = document.getElementById('login-btn-mobile');
     if(loginMobile) loginMobile.addEventListener('click', (e) => { e.preventDefault(); openModal('loginModal'); });
 
+    // Mobile Menu Toggle
     const mobileMenuButton = document.getElementById('mobileMenuButton');
     const mobileMenu = document.getElementById('mobileMenu');
     if(mobileMenuButton) mobileMenuButton.addEventListener('click', () => {
         mobileMenu.classList.toggle('hidden');
     });
+    
+    // Setup SPA Navigation
+    setupNavigation();
 }
 
 function setupNavigation() {
     const mainContainer = document.getElementById('mainContainer');
     const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('.main-section');
     
-    if (!mainContainer || !navLinks.length) return;
-
-    let currentSection = 0;
-
-    function navigateToSection(sectionIndex) {
-        if (sectionIndex >= 0 && sectionIndex < sections.length) {
-            mainContainer.style.transform = `translateX(-${sectionIndex * 100 / sections.length}%)`;
-            currentSection = sectionIndex;
-            
-            navLinks.forEach(link => {
-                link.classList.remove('text-primary', 'font-semibold');
-                if (parseInt(link.dataset.section) === sectionIndex) {
-                    link.classList.add('text-primary', 'font-semibold');
-                }
-            });
-             const mobileMenu = document.getElementById('mobileMenu');
-             if(mobileMenu) mobileMenu.classList.add('hidden');
-        }
+    if (!mainContainer || !navLinks.length) {
+        // If called before content is loaded, wait and retry
+        setTimeout(setupNavigation, 100);
+        return;
     }
 
     navLinks.forEach(link => {
@@ -114,10 +78,29 @@ function setupNavigation() {
         });
     });
 
-    navigateToSection(0);
+    navigateToSection(0); // Set initial section
 }
 
-// --- Global Modal Logic ---
+window.navigateToSection = function(sectionIndex) {
+    const mainContainer = document.getElementById('mainContainer');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.main-section');
+    
+    if (sectionIndex >= 0 && sectionIndex < sections.length) {
+        mainContainer.style.transform = `translateX(-${sectionIndex * 100 / sections.length}%)`;
+        
+        navLinks.forEach(link => {
+            link.classList.remove('text-primary', 'font-semibold');
+            if (parseInt(link.dataset.section) === sectionIndex) {
+                link.classList.add('text-primary', 'font-semibold');
+            }
+        });
+        const mobileMenu = document.getElementById('mobileMenu');
+        if(mobileMenu) mobileMenu.classList.add('hidden');
+    }
+}
+
+// Global Modal Logic
 window.openModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if(modal) modal.classList.add('active');
