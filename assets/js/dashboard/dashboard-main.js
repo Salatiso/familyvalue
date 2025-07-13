@@ -1,24 +1,33 @@
-import { initializeAuth, logout } from '../core/auth.js';
+import { initializeAuth, onAuthChange, logout } from '../core/auth.js';
+import { renderLifeCvView } from './life-cv-manager.js'; // Import the new view renderer
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeAuth();
     loadDashboardComponents();
 
+    onAuthChange((user) => {
+        if (!user) {
+            // If no user, redirect to login page. This protects the dashboard.
+            window.location.href = '../login.html';
+        } else {
+            // User is logged in, proceed to load dashboard content
+            console.log("Dashboard access granted for user:", user.uid);
+        }
+    });
+
     function loadDashboardComponents() {
-        // Load Sidebar
         fetch('../components/sidebar-dashboard.html')
-            .then(res => res.text())
+            .then(res => res.ok ? res.text() : Promise.reject('Sidebar not found'))
             .then(data => {
                 const placeholder = document.getElementById('sidebar-placeholder');
                 if (placeholder) {
                     placeholder.innerHTML = data;
                     setupSidebarListeners();
                 }
-            });
+            }).catch(console.error);
     }
     
     function setupSidebarListeners() {
-        // Add event listeners for sidebar navigation
         document.querySelectorAll('.sidebar-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -27,13 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Logout button
         const logoutBtn = document.getElementById('logout-btn');
         if(logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 logout();
-                window.location.href = '../index.html';
             });
         }
 
@@ -43,45 +50,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadView(viewName) {
         const contentArea = document.getElementById('dashboard-content-area');
-        let html = '';
+        
+        // Deactivate all links first
+        document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+        
+        // Activate the current link
+        const activeLink = document.querySelector(`.sidebar-link[data-view="${viewName}"]`);
+        if (activeLink) activeLink.classList.add('active');
 
-        // Basic router
+        // View router
         switch(viewName) {
             case 'home':
-                html = `
+                contentArea.innerHTML = `
                     <div class="dashboard-view active">
                         <h1 class="text-3xl font-bold text-dark mb-4">Dashboard Home</h1>
                         <p class="text-dark">Welcome to your Family Value dashboard. Here you can manage your Life CV, your family structure, and more.</p>
-                        <!-- Add summary cards here -->
                     </div>`;
                 break;
             case 'life-cv':
-                 html = `
-                    <div class="dashboard-view active">
-                        <h1 class="text-3xl font-bold text-dark mb-4">My Life CV</h1>
-                        <p class="text-dark">This is where you will manage all entries for your Life CV. Add skills, experiences, and projects.</p>
-                        <!-- Life CV manager UI will go here -->
-                    </div>`;
+                // Call the dedicated function to render this complex view
+                renderLifeCvView(contentArea);
                 break;
             case 'family-admin':
-                 html = `
+                 contentArea.innerHTML = `
                     <div class="dashboard-view active">
                         <h1 class="text-3xl font-bold text-dark mb-4">Family Administration</h1>
-                        <p class="text-dark">Manage family members, the organogram, and governance roles.</p>
-                        <!-- Admin tools UI will go here -->
+                        <p class="text-dark">Manage family members, the organogram, and governance roles. (Phase 2)</p>
+                    </div>`;
+                break;
+            case 'settings':
+                 contentArea.innerHTML = `
+                    <div class="dashboard-view active">
+                        <h1 class="text-3xl font-bold text-dark mb-4">Settings</h1>
+                        <p class="text-dark">Manage your account and notification settings here.</p>
                     </div>`;
                 break;
             default:
-                 html = `<div class="dashboard-view active"><p>View not found.</p></div>`;
+                 contentArea.innerHTML = `<div class="dashboard-view active"><p>View not found.</p></div>`;
         }
-        contentArea.innerHTML = html;
-        
-        // Update active link in sidebar
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.classList.remove('active');
-            if (link.dataset.view === viewName) {
-                link.classList.add('active');
-            }
-        });
     }
 });
