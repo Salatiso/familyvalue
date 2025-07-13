@@ -13,6 +13,10 @@
         .main-content { flex-grow: 1; overflow-y: auto; }
         .dashboard-view { display: none; }
         .dashboard-view.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="theme-earthy-default bg-light">
@@ -38,5 +42,7 @@
     <!-- Core Scripts -->
     <script type="module" src="../assets/js/core/auth.js"></script>
     <script type="module" src="../assets/js/dashboard/dashboard-main.js"></script>
+    <!-- Add new script for admin tools -->
+    <script type="module" src="../assets/js/dashboard/admin-tools.js"></script>
 </body>
 </html>

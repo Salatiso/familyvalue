@@ -1,18 +1,29 @@
 import { initializeAuth, onAuthChange, logout } from '../core/auth.js';
-import { renderLifeCvView } from './life-cv-manager.js'; // Import the new view renderer
+import { renderLifeCvView } from './life-cv-manager.js';
+import { renderFamilyAdminView } from './admin-tools.js';
+import { renderReleaseHubView } from './release-protocol.js'; // Import the new release hub view
 
 document.addEventListener('DOMContentLoaded', () => {
-    initializeAuth();
-    loadDashboardComponents();
+    let currentUser = null;
+    let db = null;
+    let familyId = null; // Store family ID for the user
 
-    onAuthChange((user) => {
-        if (!user) {
-            // If no user, redirect to login page. This protects the dashboard.
-            window.location.href = '../login.html';
-        } else {
-            // User is logged in, proceed to load dashboard content
-            console.log("Dashboard access granted for user:", user.uid);
-        }
+    initializeAuth((auth, firestore) => {
+        db = firestore;
+        onAuthChange(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../index.html';
+            } else {
+                currentUser = user;
+                // Check if user is an admin to get familyId
+                const familyAdminDoc = await db.collection('family_admins').doc(user.uid).get();
+                if (familyAdminDoc.exists) {
+                    familyId = familyAdminDoc.data().familyId;
+                }
+                console.log("Dashboard access granted for user:", user.uid);
+                loadDashboardComponents();
+            }
+        });
     });
 
     function loadDashboardComponents() {
@@ -44,39 +55,36 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Load initial view
         loadView('home');
     }
 
     function loadView(viewName) {
         const contentArea = document.getElementById('dashboard-content-area');
         
-        // Deactivate all links first
         document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
-        
-        // Activate the current link
         const activeLink = document.querySelector(`.sidebar-link[data-view="${viewName}"]`);
         if (activeLink) activeLink.classList.add('active');
 
-        // View router
         switch(viewName) {
             case 'home':
                 contentArea.innerHTML = `
                     <div class="dashboard-view active">
                         <h1 class="text-3xl font-bold text-dark mb-4">Dashboard Home</h1>
-                        <p class="text-dark">Welcome to your Family Value dashboard. Here you can manage your Life CV, your family structure, and more.</p>
+                        <p class="text-dark">Welcome, ${currentUser.displayName || 'User'}. This is your central hub for managing your personal and family legacy.</p>
                     </div>`;
                 break;
             case 'life-cv':
-                // Call the dedicated function to render this complex view
-                renderLifeCvView(contentArea);
+                renderLifeCvView(contentArea, db, currentUser);
                 break;
             case 'family-admin':
-                 contentArea.innerHTML = `
-                    <div class="dashboard-view active">
-                        <h1 class="text-3xl font-bold text-dark mb-4">Family Administration</h1>
-                        <p class="text-dark">Manage family members, the organogram, and governance roles. (Phase 2)</p>
-                    </div>`;
+                 renderFamilyAdminView(contentArea, db, currentUser);
+                break;
+            case 'release-hub':
+                 if (familyId) {
+                    renderReleaseHubView(contentArea, db, familyId);
+                 } else {
+                    contentArea.innerHTML = `<div class="dashboard-view active"><p>You must be a family administrator to access this page.</p></div>`;
+                 }
                 break;
             case 'settings':
                  contentArea.innerHTML = `

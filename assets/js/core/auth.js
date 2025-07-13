@@ -1,8 +1,5 @@
 // This file will handle all Firebase authentication logic.
 
-// --- Firebase Configuration ---
-// IMPORTANT: In a real-world application, these keys should be stored in environment variables
-// and not be hardcoded directly in the source code for security reasons.
 const firebaseConfig = {
     apiKey: "AIzaSyDDnhxpeaKf_5GI2QMitmgdavCpTh-si30",
     authDomain: "familyvalue-26fee.firebaseapp.com",
@@ -13,46 +10,51 @@ const firebaseConfig = {
     measurementId: "G-T3F6F1MFXB"
 };
 
-// --- Initialize Firebase ---
 let app;
 let auth;
+let db;
 
-export function initializeAuth() {
+export function initializeAuth(callback) {
     if (!firebase.apps.length) {
         app = firebase.initializeApp(firebaseConfig);
     } else {
         app = firebase.app();
     }
     auth = firebase.auth();
+    db = firebase.firestore(); // Initialize Firestore
+    
+    if (callback) {
+        callback(auth, db); // Pass auth and db instances back
+    }
     setupAuthListeners();
 }
 
-function setupAuthListeners() {
-    // Listen for authentication state changes
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            // User is signed in.
-            console.log("User is signed in:", user);
-            updateUIAfterLogin(user);
-        } else {
-            // User is signed out.
-            console.log("User is signed out.");
-            updateUIAfterLogout();
-        }
-    });
+export function onAuthChange(authInstance, callback) {
+    authInstance.onAuthStateChanged(callback);
+}
 
-    // --- EVENT LISTENERS FOR AUTH FORMS ---
-    // Note: These forms will be loaded into the DOM via modals.
-    // We use event delegation on the document to ensure listeners are attached.
+function setupAuthListeners() {
     document.addEventListener('submit', async (e) => {
         if (e.target && e.target.id === 'signup-form') {
             e.preventDefault();
+            const name = e.target.name.value;
             const email = e.target.email.value;
             const password = e.target.password.value;
+            
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await userCredential.user.updateProfile({ displayName: name });
+                
+                // Create a user document in Firestore
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
                 console.log("Signup successful:", userCredential.user);
                 closeModal('signupModal');
+                window.location.href = 'dashboard/index.html'; // Redirect after signup
             } catch (error) {
                 console.error("Signup Error:", error.message);
                 alert(`Signup Failed: ${error.message}`);
@@ -67,6 +69,7 @@ function setupAuthListeners() {
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 console.log("Login successful:", userCredential.user);
                 closeModal('loginModal');
+                window.location.href = 'dashboard/index.html'; // Redirect after login
             } catch (error) {
                 console.error("Login Error:", error.message);
                 alert(`Login Failed: ${error.message}`);
@@ -74,33 +77,37 @@ function setupAuthListeners() {
         }
     });
     
-    // Google Sign-In
-    const googleBtn = document.getElementById('google-signin-btn');
-    if(googleBtn) {
-        googleBtn.addEventListener('click', async () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                await auth.signInWithPopup(provider);
-            } catch (error) {
-                 console.error("Google Sign-in Error:", error.message);
-                 alert(`Google Sign-in Failed: ${error.message}`);
+    // Use event delegation for provider sign-in buttons
+    document.addEventListener('click', async (e) => {
+        let provider;
+        if (e.target.closest('#google-signin-btn')) {
+            provider = new firebase.auth.GoogleAuthProvider();
+        } else if (e.target.closest('#apple-signin-btn')) {
+            provider = new firebase.auth.OAuthProvider('apple.com');
+        } else {
+            return;
+        }
+
+        try {
+            const result = await auth.signInWithPopup(provider);
+            // If it's a new user, create their document in Firestore
+            if (result.additionalUserInfo.isNewUser) {
+                 await db.collection('users').doc(result.user.uid).set({
+                    name: result.user.displayName,
+                    email: result.user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
             }
-        });
-    }
+            console.log("Provider Sign-in successful");
+            closeModal('loginModal');
+            window.location.href = 'dashboard/index.html';
+        } catch (error) {
+             console.error("Provider Sign-in Error:", error.code, error.message);
+             alert(`Sign-in Failed: ${error.message}`);
+        }
+    });
 }
 
-function updateUIAfterLogin(user) {
-    // Redirect to the dashboard or update the UI to show user is logged in
-    window.location.href = 'dashboard/index.html';
-}
-
-function updateUIAfterLogout() {
-    // This function can be used to update the header to show "Login/Signup" buttons
-    // if the user logs out while on the page.
-    // For now, we handle this on page load.
-}
-
-// Export a logout function to be used in the dashboard
 export function logout() {
     auth.signOut().catch(error => {
         console.error("Logout error:", error);
