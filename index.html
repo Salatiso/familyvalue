@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FamilyValue - Recognizing Every Role</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Ubuntu:wght@400;500;700&display=swap');
+
+        :root {
+            --primary: #8C52FF; /* Vibrant Purple */
+            --primary-light: #B28DFF;
+            --secondary: #FF914D; /* Bright Orange */
+            --accent1: #FF5C8D; /* Lively Pink */
+            --accent2: #45C4B0; /* Fresh Teal */
+            --dark: #2D3748; /* Charcoal */
+            --light: #F7FAFC; /* Off-white */
+            --success: #38A169; /* Green */
+            --warning: #DD6B20; /* Amber */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            overflow: hidden; /* Prevent body scroll, manage scroll within sections */
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent1) 100%);
+        }
+
+        .bg-primary { background-color: var(--primary); }
+        .bg-secondary { background-color: var(--secondary); }
+        .bg-accent1 { background-color: var(--accent1); }
+        .bg-accent2 { background-color: var(--accent2); }
+        .text-primary { color: var(--primary); }
+        .text-secondary { color: var(--secondary); }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-light); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-secondary { background-color: var(--secondary); color: white; }
+        .btn-secondary:hover { background-color: #FFB07D; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-outline-primary { border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline-primary:hover { background-color: var(--primary); color: white; }
+
+        .main-container {
+            display: flex;
+            width: 500%; /* 5 sections */
+            height: calc(100vh - 68px); /* Full height minus nav */
+            transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Smooth elastic scroll */
+        }
+
+        .main-section {
+            width: 100vw; /* Each section takes full viewport width */
+            height: 100%;
+            overflow-y: auto; /* Allow scroll within section if content overflows */
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Hide scrollbar for sections but allow scrolling */
+        .main-section::-webkit-scrollbar { display: none; }
+        .main-section { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+        .tile {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 16px rgba(45, 55, 72, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+        .tile:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 12px 24px rgba(45, 55, 72, 0.15);
+        }
+        .tile i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px; /* Max width for modals */
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: var(--dark); }
+
+        /* Step-by-step wizard styles */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+
+        /* Family Tree Styles (Basic) */
+        .family-tree ul {
+            padding-top: 20px; position: relative;
+            transition: all 0.5s;
+            -webkit-transition: all 0.5s;
+            -moz-transition: all 0.5s;
+        }
+        .family-tree li {
+            float: left; text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 5px 0 5px;
+            transition: all 0.5s;
+            -webkit-transition: all 0.5s;
+            -moz-transition: all 0.5s;
+        }
+        /*We will use ::before and ::after to draw the connectors*/
+        .family-tree li::before, .family-tree li::after{
+            content: '';
+            position: absolute; top: 0; right: 50%;
+            border-top: 2px solid var(--primary-light);
+            width: 50%; height: 20px;
+        }
+        .family-tree li::after{
+            right: auto; left: 50%;
+            border-left: 2px solid var(--primary-light);
+        }
+        /*Remove left-right connectors from elements without any siblings*/
+        .family-tree li:only-child::after, .family-tree li:only-child::before {
+            display: none;
+        }
+        /*Remove space from the top of single children*/
+        .family-tree li:only-child{ padding-top: 0;}
+        /*Remove left connector from first child and right connector from last child*/
+        .family-tree li:first-child::before, .family-tree li:last-child::after{
+            border: 0 none;
+        }
+        /*Adding back the vertical connector to the last child*/
+        .family-tree li:last-child::before{
+            border-right: 2px solid var(--primary-light);
+            border-radius: 0 5px 0 0;
+            -webkit-border-radius: 0 5px 0 0;
+            -moz-border-radius: 0 5px 0 0;
+        }
+        .family-tree li:first-child::after{
+            border-radius: 5px 0 0 0;
+            -webkit-border-radius: 5px 0 0 0;
+            -moz-border-radius: 5px 0 0 0;
+        }
+        /*Time to add downward connectors from parents*/
+        .family-tree ul ul::before{
+            content: '';
+            position: absolute; top: 0; left: 50%;
+            border-left: 2px solid var(--primary-light);
+            width: 0; height: 20px;
+        }
+        .family-tree li div{
+            border: 1px solid var(--primary-light);
+            padding: 10px;
+            text-decoration: none;
+            color: var(--dark);
+            background-color: rgba(255,255,255,0.8);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9em;
+            display: inline-block;
+            border-radius: 8px;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        .family-tree li div:hover, .family-tree li div:hover+ul li div {
+            background: var(--primary-light); color: #fff; border: 1px solid var(--primary); transform: scale(1.05);
+        }
+        .family-tree li div .role { font-size: 0.7em; color: var(--secondary); display: block; margin-top: 4px; }
+        .family-tree li div .relation-degree { font-size: 0.6em; color: var(--accent2); display: block; margin-top: 2px; }
+
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .language-selector select {
+            background-color: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .language-selector select option {
+            background-color: var(--primary);
+            color: white;
+        }
+        .section-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--dark); }
+        .section-subtitle { font-size: 1.2rem; color: #555; margin-bottom: 3rem; max-width: 700px; text-align:center; }
+
+    </style>
+</head>
+<body>
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl mr-2">FV</div>
+                    <span class="font-bold text-xl" data-translate-key="nav.title">FamilyValue</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-3 lg:space-x-6">
+                    <a href="#" class="nav-link hover:text-primary transition-colors" data-section="0" data-translate-key="nav.home">Home</a>
+                    <a href="#" class="nav-link hover:text-primary transition-colors" data-section="1" data-translate-key="nav.vision">Our Vision</a>
+                    <a href="#" class="nav-link hover:text-primary transition-colors" data-section="2" data-translate-key="nav.features">Core Features</a>
+                    <a href="#" class="nav-link hover:text-primary transition-colors" data-section="3" data-translate-key="nav.demo">Interactive Demo</a>
+                    <a href="#" class="nav-link hover:text-primary transition-colors" data-section="4" data-translate-key="nav.join">Join Us</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="language-selector">
+                        <select id="languageSwitcher" class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary p-2">
+                            <option value="en">English</option>
+                            <option value="xh" data-translate-key="lang.xhosa">isiXhosa</option>
+                            <option value="zu" data-translate-key="lang.zulu">isiZulu</option>
+                            <option value="af" data-translate-key="lang.afrikaans">Afrikaans</option>
+                            <option value="st" data-translate-key="lang.sotho">Sesotho</option>
+                            <option value="ja" data-translate-key="lang.japanese">日本語</option>
+                            <option value="zh" data-translate-key="lang.mandarin">中文</option>
+                            <option value="sn" data-translate-key="lang.shona">chiShona</option>
+                            <option value="sw" data-translate-key="lang.swahili">Kiswahili</option>
+                            <option value="fr" data-translate-key="lang.french">Français</option>
+                            <option value="es" data-translate-key="lang.spanish">Español</option>
+                        </select>
+                    </div>
+                    <a href="#" class="btn btn-outline-primary hidden sm:inline-flex" onclick="openModal('loginModal')" data-translate-key="nav.login">Log In</a>
+                    <a href="#" class="btn btn-primary" onclick="openModal('signupModal')" data-translate-key="nav.signup">Sign Up</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobileMenuButton" class="text-dark focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="mobileMenu" class="hidden md:hidden mt-2 py-2 bg-white rounded-lg shadow-xl">
+                <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="0" data-translate-key="nav.home">Home</a>
+                <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="1" data-translate-key="nav.vision">Our Vision</a>
+                <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="2" data-translate-key="nav.features">Core Features</a>
+                <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="3" data-translate-key="nav.demo">Interactive Demo</a>
+                <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="4" data-translate-key="nav.join">Join Us</a>
+                <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-100" onclick="openModal('loginModal')" data-translate-key="nav.login">Log In</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="mainContainer" class="main-container">
+
+        <section class="main-section hero-gradient text-white">
+            <div class="container mx-auto px-4 text-center">
+                <div class="flex flex-col md:flex-row items-center justify-around">
+                    <div class="md:w-1/2 mb-10 md:mb-0 md:text-left">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-6" data-translate-key="hero.title">Recognize the Value in Every Family Role</h1>
+                        <p class="text-lg mb-8" data-translate-key="hero.subtitle">FamilyValue helps you track, visualize, and celebrate each family member's contribution - especially in extended African families and homeschooling environments.</p>
+                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center md:justify-start">
+                            <button class="btn bg-white text-primary font-medium hover:bg-gray-100" onclick="navigateToSection(3)" data-translate-key="hero.cta.demo">
+                                <i class="fas fa-play-circle mr-2"></i>See Demo
+                            </button>
+                            <button class="btn btn-secondary font-medium" onclick="navigateToSection(2)" data-translate-key="hero.cta.learn">
+                               <i class="fas fa-info-circle mr-2"></i>Learn More
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 relative">
+                        <div class="bg-white/20 backdrop-blur-md rounded-xl p-6 shadow-lg relative z-10 max-w-md mx-auto">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-white font-bold" data-translate-key="hero.card.family_name_placeholder">The Tshepo Family</h3>
+                                <span class="bg-green-400 text-green-900 px-3 py-1 rounded-full text-sm font-medium"><i class="fas fa-users mr-1"></i> <span data-translate-key="hero.card.members_count_placeholder">8 Members</span></span>
+                            </div>
+                            <div class="grid grid-cols-4 gap-3 mb-4">
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-primary-light flex items-center justify-center text-white text-xl font-bold mb-1">M</div><span class="text-xs font-medium" data-translate-key="role.mother">Mother</span></div>
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-secondary flex items-center justify-center text-white text-xl font-bold mb-1">F</div><span class="text-xs font-medium" data-translate-key="role.father">Father</span></div>
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-accent1 flex items-center justify-center text-white text-xl font-bold mb-1">G</div><span class="text-xs font-medium" data-translate-key="role.gogo">Gogo</span></div>
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-accent2 flex items-center justify-center text-white text-xl font-bold mb-1">A</div><span class="text-xs font-medium" data-translate-key="role.aunt">Aunt</span></div>
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-yellow-400 flex items-center justify-center text-white text-xl font-bold mb-1">S1</div><span class="text-xs font-medium" data-translate-key="role.sister">Sister</span></div>
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-pink-400 flex items-center justify-center text-white text-xl font-bold mb-1">B</div><span class="text-xs font-medium" data-translate-key="role.brother">Brother</span></div>
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-purple-400 flex items-center justify-center text-white text-xl font-bold mb-1">U</div><span class="text-xs font-medium" data-translate-key="role.uncle">Uncle</span></div>
+                                <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-blue-400 flex items-center justify-center text-white text-xl font-bold mb-1">C</div><span class="text-xs font-medium" data-translate-key="role.cousin">Cousin</span></div>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-white/30">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <span class="text-sm font-medium text-white/80" data-translate-key="hero.card.total_value">Total Value Created</span>
+                                        <div class="text-2xl font-bold text-white">R24,350 <span class="text-sm font-normal text-white/80" data-translate-key="hero.card.per_week">/ week</span></div>
+                                    </div>
+                                    <button onclick="navigateToSection(3)" class="text-white hover:underline text-sm font-medium" data-translate-key="hero.card.view_details">View Details <i class="fas fa-arrow-right ml-1"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-10 -right-10 w-20 h-20 bg-accent2/30 rounded-full animate-float" style="animation-delay: 0s;"></div>
+                        <div class="absolute bottom-0 -left-10 w-16 h-16 bg-secondary/30 rounded-full animate-float" style="animation-delay: 2s"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-section bg-gray-50">
+            <div class="container mx-auto px-4 text-center">
+                <i class="fas fa-binoculars text-5xl text-primary mb-4"></i>
+                <h2 class="section-title" data-translate-key="vision.title">Our Vision: Every Contribution Counts</h2>
+                <p class="section-subtitle" data-translate-key="vision.subtitle">We believe in a world where all family work is seen, valued, and celebrated. FamilyValue is built for diverse, dynamic families, empowering every member by recognizing their unique contributions to the household ecosystem.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                    <div class="tile" onclick="openModal('visionModal1')">
+                        <i class="fas fa-heartbeat text-accent1"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="vision.tile1.title">The Unseen Engine</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="vision.tile1.desc">Shining a light on the essential, often invisible, labor that keeps families thriving.</p>
+                    </div>
+                    <div class="tile" onclick="openModal('visionModal2')">
+                        <i class="fas fa-users-cog text-secondary"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="vision.tile2.title">For Every Family</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="vision.tile2.desc">Designed for nuclear, extended, blended, and co-parenting families, with a special focus on African contexts.</p>
+                    </div>
+                    <div class="tile" onclick="openModal('visionModal3')">
+                        <i class="fas fa-hands-helping text-accent2"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="vision.tile3.title">Building Stronger Bonds</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="vision.tile3.desc">Fostering understanding, appreciation, and equity within the family unit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-section bg-white">
+            <div class="container mx-auto px-4 text-center">
+                <i class="fas fa-cogs text-5xl text-primary mb-4"></i>
+                <h2 class="section-title" data-translate-key="features.title">Core Pillars of FamilyValue</h2>
+                <p class="section-subtitle" data-translate-key="features.subtitle">Explore the powerful features designed to formalize, track, and value every family contribution.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                    <div class="tile" onclick="openModal('featureFamilyMappingModal')">
+                        <i class="fas fa-sitemap text-primary"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.family_mapping.title">Dynamic Family Mapping</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.family_mapping.desc">Unlimited members, clear relationships, visual organograms. Define who's who in your unique family structure.</p>
+                    </div>
+                    <div class="tile" onclick="openModal('featureContributionTrackingModal')">
+                        <i class="fas fa-tasks text-secondary"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.contribution_tracking.title">Holistic Contribution Tracking</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.contribution_tracking.desc">Log tasks, time, and resources. From chores to emotional support, capture it all with our step-by-step input.</p>
+                    </div>
+                    <div class="tile" onclick="openModal('featureValueAttributionModal')">
+                        <i class="fas fa-balance-scale-right text-accent1"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.value_attribution.title">Fair Value Attribution</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.value_attribution.desc">Economic & non-monetary valuation. See the true impact with multi-currency support (ZAR, USD, etc.).</p>
+                    </div>
+                    <div class="tile" onclick="openModal('featureHomeschoolingModal')">
+                        <i class="fas fa-user-graduate text-accent2"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.homeschooling.title">Homeschooling Hub</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.homeschooling.desc">Integrate educational tasks, track progress, and manage resources seamlessly within the family system.</p>
+                    </div>
+                     <div class="tile" onclick="openModal('featureMultiHouseholdModal')">
+                        <i class="fas fa-house-user text-indigo-500"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.multi_household.title">Multi-Household Coordination</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.multi_household.desc">Perfect for co-parenting and extended families living apart. Sync contributions across households.</p>
+                    </div>
+                    <div class="tile" onclick="openModal('featureQuizzesModal')">
+                        <i class="fas fa-puzzle-piece text-yellow-500"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.quizzes.title">Engaging Family Quizzes</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.quizzes.desc">Fun and insightful quizzes to understand family dynamics, roles, and discover more about each other.</p>
+                    </div>
+                    <div class="tile" onclick="openModal('featureReportingModal')">
+                        <i class="fas fa-chart-line text-green-500"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.reporting.title">Insightful Visualizations</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.reporting.desc">Dashboards & reports that clearly show contribution balance, trends, and interdependencies.</p>
+                    </div>
+                     <div class="tile" onclick="openModal('featureRolesAuthModal')">
+                        <i class="fas fa-user-shield text-red-500"></i>
+                        <h3 class="text-xl font-bold mb-2" data-translate-key="features.tile.roles_auth.title">Roles & Permissions</h3>
+                        <p class="text-gray-600 text-sm" data-translate-key="features.tile.roles_auth.desc">Define family roles with specific permissions, like approving new members or managing sensitive data.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-section bg-gray-100">
+            <div class="container mx-auto px-4 text-center">
+                <i class="fas fa-desktop text-5xl text-primary mb-4"></i>
+                <h2 class="section-title" data-translate-key="demo.title">Experience FamilyValue Live</h2>
+                <p class="section-subtitle" data-translate-key="demo.subtitle">Get a glimpse of how FamilyValue brings clarity and recognition to your family's contributions. (This is a conceptual mock-up)</p>
+
+                <div class="bg-white rounded-xl shadow-2xl p-4 md:p-8 max-w-5xl mx-auto">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <div>
+                             <h3 class="text-2xl font-bold text-primary" data-translate-key="demo.dashboard.title">The Dlamini Family Dashboard</h3>
+                             <p class="text-sm text-gray-500" data-translate-key="demo.dashboard.last_updated_placeholder">Last updated: Just now</p>
+                        </div>
+                        <div class="flex items-center">
+                             <span class="text-sm mr-2" data-translate-key="demo.dashboard.currency_display">Currency:</span>
+                             <img src="https://flagcdn.com/w20/za.png" alt="ZAR" class="w-5 h-5 mr-1 rounded-sm">
+                             <span class="font-semibold text-primary">ZAR</span>
+                             <button class="ml-2 text-sm text-secondary hover:underline" onclick="openModal('settingsModal')"><i class="fas fa-cog"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2">
+                            <h4 class="text-xl font-semibold mb-4 text-left" data-translate-key="demo.dashboard.family_tree.title"><i class="fas fa-users mr-2 text-accent2"></i>Family Structure (Organogram)</h4>
+                            <p class="text-xs text-gray-500 mb-3 text-left" data-translate-key="demo.dashboard.family_tree.note">Organogram dynamically changes as family members are added/updated. Shows genetic links & how non-relatives are connected.</p>
+                            <div class="family-tree p-4 border rounded-lg bg-gray-50 overflow-x-auto">
+                                <ul>
+                                    <li>
+                                        <div><i class="fas fa-user-tie mr-1"></i> Gogo Thandi<span class="role" data-translate-key="role.matriarch">Matriarch</span><span class="relation-degree">Head</span></div>
+                                        <ul>
+                                            <li>
+                                                <div><i class="fas fa-female mr-1"></i> Zola (Daughter)<span class="role" data-translate-key="role.parent_educator">Parent, Educator</span><span class="relation-degree">Gen: 1st</span></div>
+                                                <ul>
+                                                    <li><div><i class="fas fa-child mr-1"></i> Sipho (Son)<span class="role" data-translate-key="role.student_helper">Student, Helper</span><span class="relation-degree">Gen: 2nd</span></div></li>
+                                                    <li><div><i class="fas fa-baby mr-1"></i> Lindi (Daughter)<span class="role" data-translate-key="role.toddler">Toddler</span><span class="relation-degree">Gen: 2nd</span></div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div><i class="fas fa-male mr-1"></i> Bheki (Son)<span class="role" data-translate-key="role.financial_provider">Provider</span><span class="relation-degree">Gen: 1st</span></div>
+                                                <ul>
+                                                    <li><div><i class="fas fa-hands-helping mr-1"></i> Themba (Helped Youth)<span class="role" data-translate-key="role.mentee">Mentee</span><span class="relation-degree">Linked via Bheki</span></div></li>
+                                                </ul>
+                                            </li>
+                                             <li><div><i class="fas fa-user-friends mr-1"></i> Nomsa (Aunt)<span class="role" data-translate-key="role.support_caregiver">Support</span><span class="relation-degree">Sibling to Gogo</span></div></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="mt-4 text-left">
+                                <button class="btn btn-sm btn-primary" onclick="openModal('addMemberModal')"><i class="fas fa-user-plus mr-2"></i><span data-translate-key="demo.dashboard.family_tree.add_member">Add Member</span></button>
+                                <p class="text-xs text-gray-500 mt-1" data-translate-key="demo.dashboard.family_tree.unlimited_members">Supports unlimited member additions.</p>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <h4 class="text-xl font-semibold mb-4 text-left" data-translate-key="demo.dashboard.contribution_summary.title"><i class="fas fa-chart-pie mr-2 text-accent1"></i>Contribution Snapshot</h4>
+                            <div class="space-y-4">
+                                <div class="bg-green-50 p-3 rounded-lg">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-medium text-green-700" data-translate-key="demo.dashboard.contribution_summary.total_value_month">Total Value (This Month)</span>
+                                        <span class="font-bold text-lg text-green-700">R 85,200</span>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded-lg">
+                                    <h5 class="font-semibold mb-2 text-blue-700" data-translate-key="demo.dashboard.contribution_summary.top_categories">Top Categories:</h5>
+                                    <ul class="text-sm text-blue-600 space-y-1">
+                                        <li data-translate-key="contribution.category.childcare">Childcare: 35%</li>
+                                        <li data-translate-key="contribution.category.education">Education: 25%</li>
+                                        <li data-translate-key="contribution.category.cooking">Cooking: 20%</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-yellow-50 p-3 rounded-lg">
+                                     <h5 class="font-semibold mb-2 text-yellow-700" data-translate-key="demo.dashboard.contribution_summary.pending_tasks">Pending Tasks</h5>
+                                    <p class="text-yellow-700"><span class="font-bold">3</span> <span data-translate-key="demo.dashboard.contribution_summary.tasks_need_attention">tasks need attention.</span></p>
+                                </div>
+                                <button class="btn btn-secondary w-full" onclick="openModal('logContributionModal')"><i class="fas fa-plus-circle mr-2"></i><span data-translate-key="demo.dashboard.contribution_summary.log_contribution">Log New Contribution</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-section hero-gradient text-white">
+            <div class="container mx-auto px-4 text-center">
+                <i class="fas fa-rocket text-5xl mb-4"></i>
+                <h2 class="text-4xl font-bold mb-4" data-translate-key="join.title">Ready to Value Your Family?</h2>
+                <p class="text-lg mb-8 max-w-2xl mx-auto" data-translate-key="join.subtitle">Join the FamilyValue community today and start recognizing every contribution that makes your family unique and strong. It's free to get started!</p>
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    <button class="btn bg-white text-primary font-semibold text-lg px-8 py-3 hover:bg-gray-100" onclick="openModal('signupModal')">
+                        <i class="fas fa-user-plus mr-2"></i><span data-translate-key="join.cta.signup">Create Your Family Account</span>
+                    </button>
+                    <button class="btn btn-outline border-2 border-white text-white font-semibold text-lg px-8 py-3 hover:bg-white hover:text-primary" onclick="openModal('contactModal')">
+                        <i class="fas fa-envelope mr-2"></i><span data-translate-key="join.cta.contact">Have Questions? Contact Us</span>
+                    </button>
+                </div>
+                <div class="mt-12">
+                    <p class="text-sm" data-translate-key="join.philosophy">We are committed to supporting diverse family structures, especially within the rich cultural tapestry of Africa and beyond.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="visionModal1" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('visionModal1')">&times;</span><h3 class="text-2xl font-bold mb-4" data-translate-key="vision.modal1.title">The Unseen Engine</h3><p data-translate-key="vision.modal1.desc">...</p></div></div>
+    <div id="visionModal2" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('visionModal2')">&times;</span><h3 class="text-2xl font-bold mb-4" data-translate-key="vision.modal2.title">For Every Family</h3><p data-translate-key="vision.modal2.desc">...</p></div></div>
+    <div id="visionModal3" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('visionModal3')">&times;</span><h3 class="text-2xl font-bold mb-4" data-translate-key="vision.modal3.title">Building Stronger Bonds</h3><p data-translate-key="vision.modal3.desc">...</p></div></div>
+
+    <div id="featureFamilyMappingModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('featureFamilyMappingModal')">&times;</span>
+            <div class="text-center mb-4"><i class="fas fa-sitemap text-5xl text-primary"></i></div>
+            <h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.family_mapping.title">Dynamic Family Mapping</h3>
+            <p class="mb-4" data-translate-key="features.modal.family_mapping.intro">FamilyValue empowers you to represent your family exactly as it is, no matter how beautifully complex. Our system is designed for:</p>
+            <ul class="list-disc list-inside space-y-2 mb-6 text-left">
+                <li data-translate-key="features.modal.family_mapping.point1"><i class="fas fa-users text-green-500 mr-2"></i><strong data-translate-key="features.modal.family_mapping.point1.strong">Unlimited Members:</strong> From nuclear to vast extended families, add everyone who is part of your unit.</li>
+                <li data-translate-key="features.modal.family_mapping.point2"><i class="fas fa-link text-green-500 mr-2"></i><strong data-translate-key="features.modal.family_mapping.point2.strong">Clear Relationship Definition:</strong> Specify how each member is related (mother, father, gogo, cousin, uncle, adopted child, guardian, even non-blood relations like a 'family friend being supported' linked through a specific member).</li>
+                <li data-translate-key="features.modal.family_mapping.point3"><i class="fas fa-project-diagram text-green-500 mr-2"></i><strong data-translate-key="features.modal.family_mapping.point3.strong">Visual Family Organogram:</strong> See your family structure come to life! The tree dynamically updates as you add members, showing genetic ties (e.g., "1st degree," "2nd degree") and connections.</li>
+                <li data-translate-key="features.modal.family_mapping.point4"><i class="fas fa-house-damage text-green-500 mr-2"></i><strong data-translate-key="features.modal.family_mapping.point4.strong">Multi-Household Support:</strong> Easily manage members across different households, crucial for co-parenting or extended families living separately but connected.</li>
+            </ul>
+            <p class="text-sm text-gray-600 mb-6" data-translate-key="features.modal.family_mapping.note">This ensures that every individual's place and connection within the family is acknowledged and understood.</p>
+            <div class="text-center">
+                <button class="btn btn-primary" onclick="openModal('addMemberModal')"><i class="fas fa-user-plus mr-2"></i><span data-translate-key="features.modal.family_mapping.cta">Start Mapping Your Family</span></button>
+            </div>
+        </div>
+    </div>
+    <div id="featureContributionTrackingModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('featureContributionTrackingModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.contribution_tracking.title">Holistic Contribution Tracking</h3><p data-translate-key="features.modal.contribution_tracking.desc_detail">...</p></div></div>
+    <div id="featureValueAttributionModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('featureValueAttributionModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.value_attribution.title">Fair Value Attribution</h3><p data-translate-key="features.modal.value_attribution.desc_detail">...</p></div></div>
+    <div id="featureHomeschoolingModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('featureHomeschoolingModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.homeschooling.title">Homeschooling Hub</h3><p data-translate-key="features.modal.homeschooling.desc_detail">...</p></div></div>
+    <div id="featureMultiHouseholdModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('featureMultiHouseholdModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.multi_household.title">Multi-Household Coordination</h3><p data-translate-key="features.modal.multi_household.desc_detail">...</p></div></div>
+    <div id="featureQuizzesModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('featureQuizzesModal')">&times;</span>
+            <div class="text-center mb-4"><i class="fas fa-puzzle-piece text-5xl text-yellow-500"></i></div>
+            <h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.quizzes.title">Engaging Family Quizzes</h3>
+            <p class="mb-4" data-translate-key="features.modal.quizzes.desc_detail">Discover more about your family's dynamics, strengths, and communication styles through fun and insightful quizzes. These can help you:</p>
+            <ul class="list-disc list-inside space-y-2 mb-6 text-left">
+                <li data-translate-key="features.modal.quizzes.point1">Understand different love languages or contribution styles within the family.</li>
+                <li data-translate-key="features.modal.quizzes.point2">Identify your family's primary "management" type (e.g., collaborative, traditional).</li>
+                <li data-translate-key="features.modal.quizzes.point3">Spark conversations about roles and expectations in a lighthearted way.</li>
+            </ul>
+             <div id="quizContainer">
+                <div class="wizard-step active" id="quizStep1">
+                    <h4 class="font-semibold mb-2" data-translate-key="features.modal.quizzes.q1.title">Quiz: What's Your Family's Superpower?</h4>
+                    <p class="mb-3" data-translate-key="features.modal.quizzes.q1.question">When a challenge arises, what's your family's first instinct?</p>
+                    <div class="space-y-2">
+                        <button class="w-full p-3 border rounded-lg hover:bg-gray-100" onclick="nextQuizStep('quizStep2')" data-translate-key="features.modal.quizzes.q1.opt1">Talk it out together</button>
+                        <button class="w-full p-3 border rounded-lg hover:bg-gray-100" onclick="nextQuizStep('quizStep2')" data-translate-key="features.modal.quizzes.q1.opt2">Everyone jumps into action</button>
+                        <button class="w-full p-3 border rounded-lg hover:bg-gray-100" onclick="nextQuizStep('quizStep2')" data-translate-key="features.modal.quizzes.q1.opt3">Seek wisdom from elders</button>
+                    </div>
+                </div>
+                <div class="wizard-step" id="quizStep2">
+                     <h4 class="font-semibold mb-2" data-translate-key="features.modal.quizzes.q2.title">Question 2...</h4>
+                     <p class="mb-3" data-translate-key="features.modal.quizzes.q2.question">...</p>
+                     <button class="btn btn-secondary" onclick="prevQuizStep('quizStep1')" data-translate-key="common.previous">Previous</button>
+                     <button class="btn btn-primary" onclick="showQuizResult()" data-translate-key="common.finish">Finish Quiz</button>
+                </div>
+                <div class="wizard-step" id="quizResult">
+                    <h4 class="font-semibold mb-2 text-green-600" data-translate-key="features.modal.quizzes.result.title">Your Family's Superpower: The Communicators!</h4>
+                    <p data-translate-key="features.modal.quizzes.result.desc">You excel at open dialogue...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="featureReportingModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('featureReportingModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.reporting.title">Insightful Visualizations & Reports</h3><p data-translate-key="features.modal.reporting.desc_detail">...</p></div></div>
+    <div id="featureRolesAuthModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('featureRolesAuthModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="features.modal.roles_auth.title">Roles & Permissions Management</h3><p data-translate-key="features.modal.roles_auth.desc_detail">...</p></div></div>
+
+
+    <div id="addMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('addMemberModal')">&times;</span>
+            <h3 class="text-2xl font-bold mb-6 text-center" data-translate-key="member.modal.add.title"><i class="fas fa-user-plus mr-2 text-primary"></i>Add New Family Member</h3>
+            <div id="addMemberWizard">
+                <div class="wizard-step active" id="memberStep1">
+                    <h4 class="font-semibold mb-1" data-translate-key="member.modal.add.step1.title">Step 1: Basic Information</h4>
+                    <p class="text-sm text-gray-500 mb-4" data-translate-key="member.modal.add.step1.subtitle">Let's start with the basics.</p>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step1.label.name">Full Name</label>
+                        <input type="text" class="w-full p-2 border rounded-lg" placeholder="e.g., Nomusa Khumalo">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step1.label.dob">Date of Birth (Optional)</label>
+                        <input type="date" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div class="text-right">
+                        <button class="btn btn-primary" onclick="nextStep('memberStep2', 'memberStep1')" data-translate-key="common.next">Next <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+                <div class="wizard-step" id="memberStep2">
+                    <h4 class="font-semibold mb-1" data-translate-key="member.modal.add.step2.title">Step 2: Define Relationship</h4>
+                    <p class="text-sm text-gray-500 mb-4" data-translate-key="member.modal.add.step2.subtitle">How is this person connected to the family?</p>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step2.label.relation_to_whom">Relationship to (Existing Member)</label>
+                        <select class="w-full p-2 border rounded-lg">
+                            <option data-translate-key="member.modal.add.step2.option.select_member_placeholder">Select existing member...</option>
+                            <option>Gogo Thandi</option>
+                            <option>Zola</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step2.label.relationship_type">Relationship Type</label>
+                        <input type="text" class="w-full p-2 border rounded-lg" placeholder="e.g., Son, Daughter, Cousin, Family Friend">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step2.label.genetic_link">Genetic Link (if applicable)</label>
+                        <select class="w-full p-2 border rounded-lg">
+                            <option data-translate-key="member.modal.add.step2.option.not_applicable">Not Applicable / Unknown</option>
+                            <option data-translate-key="member.modal.add.step2.option.direct_parent_child">Direct Parent/Child (1st degree)</option>
+                            <option data-translate-key="member.modal.add.step2.option.sibling">Sibling (1st degree)</option>
+                            <option data-translate-key="member.modal.add.step2.option.grandparent_child">Grandparent/Grandchild (2nd degree)</option>
+                        </select>
+                    </div>
+                     <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step2.label.linked_via">If non-blood relative, linked via whom?</label>
+                        <input type="text" class="w-full p-2 border rounded-lg" placeholder="e.g., Friend of Bheki, Supported by family">
+                    </div>
+                    <div class="flex justify-between">
+                        <button class="btn btn-outline-primary" onclick="prevStep('memberStep1', 'memberStep2')" data-translate-key="common.previous"><i class="fas fa-arrow-left mr-2"></i>Previous</button>
+                        <button class="btn btn-primary" onclick="nextStep('memberStep3', 'memberStep2')" data-translate-key="common.next">Next <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+                <div class="wizard-step" id="memberStep3">
+                    <h4 class="font-semibold mb-1" data-translate-key="member.modal.add.step3.title">Step 3: Roles & Permissions</h4>
+                     <p class="text-sm text-gray-500 mb-4" data-translate-key="member.modal.add.step3.subtitle">Assign roles and platform permissions.</p>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step3.label.primary_role">Primary Role in Family</label>
+                        <input type="text" class="w-full p-2 border rounded-lg" placeholder="e.g., Caregiver, Student, Provider">
+                    </div>
+                     <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" data-translate-key="member.modal.add.step3.label.platform_access">Platform Access Level</label>
+                        <select class="w-full p-2 border rounded-lg">
+                            <option data-translate-key="member.modal.add.step3.option.viewer">Viewer (Can see information)</option>
+                            <option data-translate-key="member.modal.add.step3.option.contributor">Contributor (Can add tasks/info for self)</option>
+                            <option data-translate-key="member.modal.add.step3.option.member_manager">Member Manager (Can invite/add new members - requires approval)</option>
+                            <option data-translate-key="member.modal.add.step3.option.admin">Administrator (Full control, can approve members)</option>
+                        </select>
+                         <p class="text-xs text-gray-500 mt-1" data-translate-key="member.modal.add.step3.note.admin_approval">Note: Adding members with 'Member Manager' or 'Administrator' roles might require approval from an existing Administrator.</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <button class="btn btn-outline-primary" onclick="prevStep('memberStep2', 'memberStep3')" data-translate-key="common.previous"><i class="fas fa-arrow-left mr-2"></i>Previous</button>
+                        <button class="btn btn-success bg-success text-white" onclick="finishAddMember()" data-translate-key="common.add_member"><i class="fas fa-check mr-2"></i>Add Member</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="logContributionModal" class="modal">
+        <div class="modal-content">
+             <span class="modal-close" onclick="closeModal('logContributionModal')">&times;</span>
+             <h3 class="text-2xl font-bold mb-6 text-center" data-translate-key="contribution.modal.log.title"><i class="fas fa-plus-circle mr-2 text-secondary"></i>Log New Contribution</h3>
+             <div id="logContributionWizard">
+                <div class="wizard-step active" id="contribStep1">
+                    <h4 class="font-semibold mb-1" data-translate-key="contribution.modal.log.step1.title">Step 1: What did you do?</h4>
+                    <p class="text-sm text-gray-500 mb-4" data-translate-key="contribution.modal.log.step1.subtitle">Select the category of your contribution.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <button class="p-4 border rounded-lg hover:bg-gray-100 text-center" onclick="nextStep('contribStep2', 'contribStep1')"><i class="fas fa-utensils text-2xl mb-1 text-orange-500"></i><span class="block text-sm" data-translate-key="contribution.category.cooking">Cooking</span></button>
+                        <button class="p-4 border rounded-lg hover:bg-gray-100 text-center" onclick="nextStep('contribStep2', 'contribStep1')"><i class="fas fa-broom text-2xl mb-1 text-blue-500"></i><span class="block text-sm" data-translate-key="contribution.category.cleaning">Cleaning</span></button>
+                        <button class="p-4 border rounded-lg hover:bg-gray-100 text-center" onclick="nextStep('contribStep2', 'contribStep1')"><i class="fas fa-baby-carriage text-2xl mb-1 text-pink-500"></i><span class="block text-sm" data-translate-key="contribution.category.childcare">Childcare</span></button>
+                        <button class="p-4 border rounded-lg hover:bg-gray-100 text-center" onclick="nextStep('contribStep2', 'contribStep1')"><i class="fas fa-book-reader text-2xl mb-1 text-green-500"></i><span class="block text-sm" data-translate-key="contribution.category.education">Education</span></button>
+                        <button class="p-4 border rounded-lg hover:bg-gray-100 text-center" onclick="nextStep('contribStep2', 'contribStep1')"><i class="fas fa-car text-2xl mb-1 text-purple-500"></i><span class="block text-sm" data-translate-key="contribution.category.transport">Transport</span></button>
+                        <button class="p-4 border rounded-lg hover:bg-gray-100 text-center" onclick="nextStep('contribStep2', 'contribStep1')"><i class="fas fa-comments-dollar text-2xl mb-1 text-yellow-500"></i><span class="block text-sm" data-translate-key="contribution.category.financial">Financial</span></button>
+                    </div>
+                </div>
+                 <div class="wizard-step" id="contribStep2">
+                    <h4 class="font-semibold mb-1" data-translate-key="contribution.modal.log.step2.title">Step 2: Details</h4>
+                     <p class="text-sm text-gray-500 mb-4" data-translate-key="contribution.modal.log.step2.subtitle">Provide more details about this contribution.</p>
+                     <textarea class="w-full p-2 border rounded-lg mb-3" rows="3" placeholder="e.g., Cooked dinner for 6 people, Helped with homework for 2 hours..."></textarea>
+                     <div class="mb-3">
+                         <label class="block text-sm font-medium" data-translate-key="contribution.modal.log.step2.label.time">Time Spent (approx)</label>
+                         <input type="text" class="w-full p-2 border rounded-lg" placeholder="e.g., 1 hour 30 minutes">
+                     </div>
+                     <div class="flex justify-between">
+                        <button class="btn btn-outline-primary" onclick="prevStep('contribStep1', 'contribStep2')" data-translate-key="common.previous"><i class="fas fa-arrow-left mr-2"></i>Previous</button>
+                        <button class="btn btn-primary" onclick="finishLogContribution()" data-translate-key="common.log_contribution"><i class="fas fa-check mr-2"></i>Log Contribution</button>
+                    </div>
+                 </div>
+             </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('settingsModal')">&times;</span>
+            <h3 class="text-2xl font-bold mb-6 text-center" data-translate-key="settings.modal.title"><i class="fas fa-cog mr-2 text-primary"></i>Family Settings</h3>
+            <div class="mb-6">
+                <label for="currencySelect" class="block text-sm font-medium mb-1" data-translate-key="settings.modal.label.primary_currency">Primary Currency for Valuation</label>
+                <div class="flex items-center">
+                    <img id="selectedCurrencyFlag" src="https://flagcdn.com/w20/za.png" alt="ZAR" class="w-6 h-5 mr-2 rounded-sm">
+                    <select id="currencySelect" class="w-full p-2 border rounded-lg">
+                        <option value="ZAR" data-flag="za" data-translate-key="currency.zar">South African Rand (ZAR)</option>
+                        <option value="USD" data-flag="us" data-translate-key="currency.usd">US Dollar (USD)</option>
+                        <option value="EUR" data-flag="eu" data-translate-key="currency.eur">Euro (EUR)</option>
+                        <option value="GBP" data-flag="gb" data-translate-key="currency.gbp">British Pound (GBP)</option>
+                        <option value="JPY" data-flag="jp" data-translate-key="currency.jpy">Japanese Yen (JPY)</option>
+                        <option value="CNY" data-flag="cn" data-translate-key="currency.cny">Chinese Yuan (CNY)</option>
+                        </select>
+                </div>
+                <p class="text-xs text-gray-500 mt-1" data-translate-key="settings.modal.note.currency">This will be used for calculating the economic value of contributions.</p>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-1" data-translate-key="settings.modal.label.family_name">Family Name</label>
+                <input type="text" class="w-full p-2 border rounded-lg" value="The Dlamini Family">
+            </div>
+            <div class="text-right">
+                 <button class="btn btn-primary" onclick="saveSettings()" data-translate-key="common.save_settings"><i class="fas fa-save mr-2"></i>Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('loginModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="auth.login.title">Login to FamilyValue</h3><form><div class="mb-4"><label data-translate-key="auth.form.email">Email</label><input type="email" class="w-full p-2 border rounded"></div><div class="mb-4"><label data-translate-key="auth.form.password">Password</label><input type="password" class="w-full p-2 border rounded"></div><button type="submit" class="btn btn-primary w-full" data-translate-key="auth.login.button">Log In</button></form></div></div>
+    <div id="signupModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('signupModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="auth.signup.title">Create Your FamilyValue Account</h3><form><div class="mb-4"><label data-translate-key="auth.form.family_name">Your Family Name</label><input type="text" class="w-full p-2 border rounded"></div><div class="mb-4"><label data-translate-key="auth.form.email">Your Email</label><input type="email" class="w-full p-2 border rounded"></div><div class="mb-4"><label data-translate-key="auth.form.password">Password</label><input type="password" class="w-full p-2 border rounded"></div><button type="submit" class="btn btn-primary w-full" data-translate-key="auth.signup.button">Sign Up</button></form></div></div>
+    <div id="contactModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('contactModal')">&times;</span><h3 class="text-2xl font-bold mb-4 text-center" data-translate-key="contact.modal.title">Contact Us</h3><p data-translate-key="contact.modal.desc">Have questions or feedback? We'd love to hear from you!</p><form><button type="submit" class="btn btn-primary w-full mt-4" data-translate-key="contact.modal.button">Send Message</button></form></div></div>
+
+
+    <script>
+        const mainContainer = document.getElementById('mainContainer');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.main-section');
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        let currentSection = 0;
+
+        function navigateToSection(sectionIndex) {
+            if (sectionIndex >= 0 && sectionIndex < sections.length) {
+                mainContainer.style.transform = `translateX(-${sectionIndex * 100 / sections.length}%)`;
+                currentSection = sectionIndex;
+                // Update active link style if needed
+                navLinks.forEach(link => link.classList.remove('text-primary', 'font-semibold'));
+                navLinks.forEach(link => {
+                    if (parseInt(link.dataset.section) === sectionIndex) {
+                        link.classList.add('text-primary', 'font-semibold');
+                    }
+                });
+                mobileMenu.classList.add('hidden'); // Close mobile menu on navigation
+            }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionIndex = parseInt(e.target.closest('.nav-link').dataset.section);
+                navigateToSection(sectionIndex);
+            });
+        });
+
+        // Swipe gesture for touch devices (basic implementation)
+        let touchstartX = 0;
+        let touchendX = 0;
+
+        mainContainer.addEventListener('touchstart', function(event) {
+            touchstartX = event.changedTouches[0].screenX;
+        }, false);
+
+        mainContainer.addEventListener('touchend', function(event) {
+            touchendX = event.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+        function handleSwipe() {
+            if (touchendX < touchstartX - 50) { // Swiped left
+                if(currentSection < sections.length - 1) navigateToSection(currentSection + 1);
+            }
+            if (touchendX > touchstartX + 50) { // Swiped right
+                if(currentSection > 0) navigateToSection(currentSection - 1);
+            }
+        }
+        // Initial navigation
+        navigateToSection(0);
+
+
+        // Mobile Menu Toggle
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+
+        // Modal Logic
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scroll when modal is open
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Only reset body overflow if no other modals are open (more complex logic might be needed for stacked modals)
+            const anyModalOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'flex');
+            if (!anyModalOpen) {
+                document.body.style.overflow = 'hidden'; // Keep main page overflow hidden for horizontal scroll
+            }
+        }
+        // Close modal if clicked outside content
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                 const anyModalOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'flex');
+                if (!anyModalOpen) {
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+
+        // Wizard Step Logic
+        function nextStep(nextStepId, currentStepId) {
+            document.getElementById(currentStepId).classList.remove('active');
+            document.getElementById(nextStepId).classList.add('active');
+        }
+
+        function prevStep(prevStepId, currentStepId) {
+            document.getElementById(currentStepId).classList.remove('active');
+            document.getElementById(prevStepId).classList.add('active');
+        }
+
+        // Quiz Logic
+        function nextQuizStep(nextStepId) {
+            const currentActive = document.querySelector('#quizContainer .wizard-step.active');
+            if(currentActive) currentActive.classList.remove('active');
+            document.getElementById(nextStepId).classList.add('active');
+        }
+         function prevQuizStep(prevStepId) {
+            const currentActive = document.querySelector('#quizContainer .wizard-step.active');
+            if(currentActive) currentActive.classList.remove('active');
+            document.getElementById(prevStepId).classList.add('active');
+        }
+        function showQuizResult(){
+            nextQuizStep('quizResult');
+        }
+
+
+        function finishAddMember() {
+            alert('New member added (conceptually)! Approval might be needed.');
+            closeModal('addMemberModal');
+            // Reset wizard to first step for next time
+            document.querySelectorAll('#addMemberWizard .wizard-step').forEach(step => step.classList.remove('active'));
+            document.getElementById('memberStep1').classList.add('active');
+        }
+
+        function finishLogContribution() {
+            alert('Contribution logged (conceptually)!');
+            closeModal('logContributionModal');
+             document.querySelectorAll('#logContributionWizard .wizard-step').forEach(step => step.classList.remove('active'));
+            document.getElementById('contribStep1').classList.add('active');
+        }
+
+        function saveSettings() {
+            alert('Settings saved (conceptually)!');
+            closeModal('settingsModal');
+        }
+
+        // Currency Flag Changer
+        const currencySelect = document.getElementById('currencySelect');
+        const selectedCurrencyFlag = document.getElementById('selectedCurrencyFlag');
+        currencySelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const flagCode = selectedOption.dataset.flag;
+            selectedCurrencyFlag.src = `https://flagcdn.com/w20/${flagCode}.png`;
+            selectedCurrencyFlag.alt = selectedOption.value;
+        });
+
+        // Basic Translation Mockup
+        const translations = {
+            en: { /* English is default in HTML */ },
+            xh: {
+                "nav.title": "iFamilyValue",
+                "nav.home": "Ekhaya",
+                "nav.vision": "Umbono Wethu",
+                "nav.features": "Iimpawu Eziphambili",
+                "nav.demo": "Idemo Esbenzisanayo",
+                "nav.join": "Joyina Nathi",
+                "nav.login": "Ngena",
+                "nav.signup": "Bhalisa",
+                "hero.title": "Qaphela Ixabiso Kwindima Nenye Yosapho",
+                "hero.subtitle": "iFamilyValue ikunceda ukulandelela, ukubonisa, nokubhiyozela igalelo lelungu ngalinye losapho - ingakumbi kusapho olwandisiweyo lwaseAfrika nakwiimeko zokufundela ekhaya.",
+                "hero.cta.demo": "Bona Idemo",
+                "hero.cta.learn": "Funda Ngakumbi",
+                // ... more xhosa translations
+            },
+            // Add other languages here: zu, af, st, ja, zh, sn, sw, fr, es
+            // Example for Japanese
+            ja: {
+                "nav.title": "ファミリーバリュー",
+                "nav.home": "ホーム",
+                "nav.vision": "私たちのビジョン",
+                "nav.features": "主な機能",
+                "nav.demo": "インタラクティブデモ",
+                "nav.join": "参加する",
+                "nav.login": "ログイン",
+                "nav.signup": "サインアップ",
+                "hero.title": "すべての家族の役割の価値を認識する",
+                "hero.subtitle": "ファミリーバリューは、特にアフリカの拡大家族やホームスクーリング環境において、各家族成員の貢献を追跡、視覚化し、祝うのに役立ちます。",
+                // ... more japanese translations
+            }
+        };
+
+        const languageSwitcher = document.getElementById('languageSwitcher');
+        languageSwitcher.addEventListener('change', (event) => {
+            const selectedLang = event.target.value;
+            translatePage(selectedLang);
+        });
+
+        function translatePage(lang) {
+            if (lang === 'en' || !translations[lang]) { // Reset to English or if lang not found
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    // This part is tricky without storing original English text.
+                    // For a real app, you'd fetch English text or have it as default.
+                    // Here, we assume English is the hardcoded text.
+                    // A better approach would be to set el.textContent = originalEnglishText[el.dataset.translateKey];
+                });
+                return;
+            }
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.dataset.translateKey;
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+        }
+
+
+    </script>
+</body>
+</html>
