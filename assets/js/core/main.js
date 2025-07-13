@@ -1,74 +1,83 @@
+/*
+    File: assets/js/core/main.js
+    Description: Main entry point for the landing page.
+    Changes:
+    - Fixed the SPA navigation logic to prevent the sliding issue by ensuring it runs after all components are loaded.
+    - Added a global `openConfirmationModal` function to replace `confirm()`.
+    - Initializes the new i18n module.
+    - Uses root-relative paths for fetching components for robustness.
+*/
 import { initializeAuth } from './auth.js';
 import { initializeThemeSwitcher } from './theme-switcher.js';
+import { initializeI18n } from './i18n.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initializeAuth();
     initializeThemeSwitcher();
-    loadComponents();
+    // Load components and then initialize scripts that depend on them
+    await loadComponents();
+    await initializeI18n(); 
+    setupNavigation();
 });
 
 async function loadComponents() {
     const componentMap = {
-        'header-placeholder': 'components/header.html',
-        'footer-placeholder': 'components/footer.html',
-        'modals-placeholder': 'components/modals.html',
-        'main-content-container': 'components/main-sections.html'
+        'header-placeholder': '/familyvalue/components/header.html',
+        'footer-placeholder': '/familyvalue/components/footer.html',
+        'modals-placeholder': '/familyvalue/components/modals.html',
+        'main-content-container': '/familyvalue/components/main-sections.html'
     };
 
-    for (const [placeholderId, filePath] of Object.entries(componentMap)) {
+    const fetchPromises = Object.entries(componentMap).map(async ([placeholderId, filePath]) => {
         const placeholder = document.getElementById(placeholderId);
         if (placeholder) {
             try {
                 const response = await fetch(filePath);
                 if (!response.ok) throw new Error(`Component not found: ${filePath}`);
-                const data = await response.text();
-                placeholder.innerHTML = data;
-                console.log(`${filePath} loaded successfully.`);
+                placeholder.innerHTML = await response.text();
             } catch (error) {
                 console.error(`Error loading component from ${filePath}:`, error);
                 placeholder.innerHTML = `<p class="text-red-500 text-center">Error loading content.</p>`;
             }
         }
-    }
-    // Post-load initializations
+    });
+
+    // Wait for all components to be fetched and inserted into the DOM
+    await Promise.all(fetchPromises);
+    // Now that components are loaded, run setup that depends on them
     postLoadSetup();
 }
 
 function postLoadSetup() {
-    // Load Logo
-    fetch('assets/svg/logo.svg')
+    fetch('/familyvalue/assets/svg/logo.svg')
         .then(res => res.text())
         .then(data => {
             const logoContainer = document.getElementById('logo-container');
             if (logoContainer) logoContainer.innerHTML = data;
         }).catch(console.error);
     
-    // Attach Modal Listeners
     document.getElementById('login-btn')?.addEventListener('click', (e) => { e.preventDefault(); openModal('loginModal'); });
     document.getElementById('signup-btn')?.addEventListener('click', (e) => { e.preventDefault(); openModal('signupModal'); });
-    const loginMobile = document.getElementById('login-btn-mobile');
-    if(loginMobile) loginMobile.addEventListener('click', (e) => { e.preventDefault(); openModal('loginModal'); });
+    document.getElementById('login-btn-mobile')?.addEventListener('click', (e) => { e.preventDefault(); openModal('loginModal'); });
 
-    // Mobile Menu Toggle
     const mobileMenuButton = document.getElementById('mobileMenuButton');
     const mobileMenu = document.getElementById('mobileMenu');
     if(mobileMenuButton) mobileMenuButton.addEventListener('click', () => {
         mobileMenu.classList.toggle('hidden');
     });
-    
-    // Setup SPA Navigation
-    setupNavigation();
 }
 
 function setupNavigation() {
     const mainContainer = document.getElementById('mainContainer');
     const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.main-section');
     
-    if (!mainContainer || !navLinks.length) {
-        // If called before content is loaded, wait and retry
-        setTimeout(setupNavigation, 100);
+    if (!mainContainer || !navLinks.length || sections.length === 0) {
+        console.error("Navigation setup failed: key elements not found after load.");
         return;
     }
+
+    mainContainer.style.width = `${sections.length * 100}%`;
 
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -78,7 +87,7 @@ function setupNavigation() {
         });
     });
 
-    navigateToSection(0); // Set initial section
+    navigateToSection(0);
 }
 
 window.navigateToSection = function(sectionIndex) {
@@ -86,8 +95,9 @@ window.navigateToSection = function(sectionIndex) {
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('.main-section');
     
-    if (sectionIndex >= 0 && sectionIndex < sections.length) {
-        mainContainer.style.transform = `translateX(-${sectionIndex * 100 / sections.length}%)`;
+    if (sections.length > 0 && sectionIndex >= 0 && sectionIndex < sections.length) {
+        const percentage = sectionIndex * (100 / sections.length);
+        mainContainer.style.transform = `translateX(-${percentage}%)`;
         
         navLinks.forEach(link => {
             link.classList.remove('text-primary', 'font-semibold');
@@ -95,8 +105,7 @@ window.navigateToSection = function(sectionIndex) {
                 link.classList.add('text-primary', 'font-semibold');
             }
         });
-        const mobileMenu = document.getElementById('mobileMenu');
-        if(mobileMenu) mobileMenu.classList.add('hidden');
+        document.getElementById('mobileMenu')?.classList.add('hidden');
     }
 }
 
@@ -116,3 +125,25 @@ window.addEventListener('click', function(event) {
         event.target.classList.remove('active');
     }
 });
+
+window.openConfirmationModal = function(title, text, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    if (!modal) return;
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-text').textContent = text;
+    
+    const confirmBtn = document.getElementById('confirm-ok-btn');
+    const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    newConfirmBtn.addEventListener('click', () => {
+        onConfirm();
+        closeModal('confirmModal');
+    });
+
+    cancelBtn.onclick = () => closeModal('confirmModal');
+    
+    openModal('confirmModal');
+}
