@@ -1,0 +1,38 @@
+<aside class="w-64 bg-secondary text-white flex flex-col flex-shrink-0">
+    <div class="p-4 border-b border-themed flex items-center space-x-2">
+        <div id="logo-container-sidebar" class="h-8 w-8">
+             <!-- Mini logo can be loaded here -->
+        </div>
+        <span class="font-bold text-lg">Family Value</span>
+    </div>
+    <nav class="flex-grow p-2">
+        <a href="#" class="sidebar-link flex items-center p-3 rounded-lg hover:bg-primary-light transition-colors" data-view="home">
+            <i class="fas fa-home w-6"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-link flex items-center p-3 rounded-lg hover:bg-primary-light transition-colors" data-view="life-cv">
+            <i class="fas fa-id-card w-6"></i>
+            <span>My Life CV</span>
+        </a>
+        <a href="#" class="sidebar-link flex items-center p-3 rounded-lg hover:bg-primary-light transition-colors" data-view="family-admin">
+            <i class="fas fa-users-cog w-6"></i>
+            <span>Family Admin</span>
+        </a>
+        <a href="#" class="sidebar-link flex items-center p-3 rounded-lg hover:bg-primary-light transition-colors" data-view="settings">
+            <i class="fas fa-cog w-6"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+    <div class="p-4 border-t border-themed">
+        <a href="#" id="logout-btn" class="flex items-center p-3 rounded-lg hover:bg-red-500 transition-colors">
+            <i class="fas fa-sign-out-alt w-6"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+<style>
+    .sidebar-link.active {
+        background-color: var(--primary-light);
+        font-weight: 600;
+    }
+</style>
