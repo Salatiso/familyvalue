@@ -1,6 +1,4 @@
 <!-- This file contains all the sections for the single-page application -->
-
-<!-- Main Container for Horizontal Scrolling -->
 <div id="mainContainer" class="main-container">
 
     <!-- Section 1: Hero -->
@@ -8,35 +6,23 @@
         <div class="container mx-auto px-4 text-center">
             <div class="flex flex-col md:flex-row items-center justify-around">
                 <div class="md:w-1/2 mb-10 md:mb-0 md:text-left">
-                    <h1 class="text-4xl md:text-5xl font-bold mb-6">Recognize the Value in Every Family Role</h1>
-                    <p class="text-lg mb-8">FamilyValue helps you track, visualize, and celebrate each family member's contribution - especially in extended African families and homeschooling environments.</p>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6" data-i18n="hero.title">Recognize the Value in Every Family Role</h1>
+                    <p class="text-lg mb-8" data-i18n="hero.subtitle">FamilyValue helps you track, visualize, and celebrate each family member's contribution - especially in extended African families and homeschooling environments.</p>
                     <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center md:justify-start">
-                        <button class="btn bg-white text-primary font-medium hover:bg-gray-100" onclick="navigateToSection(3)">
-                            <i class="fas fa-play-circle mr-2"></i>See Demo
-                        </button>
-                        <button class="btn btn-secondary font-medium" onclick="navigateToSection(2)">
-                           <i class="fas fa-info-circle mr-2"></i>Learn More
-                        </button>
+                        <button class="btn bg-white text-primary font-medium hover:bg-gray-100" onclick="navigateToSection(3)"><i class="fas fa-play-circle mr-2"></i><span data-i18n="hero.see_demo">See Demo</span></button>
+                        <button class="btn btn-secondary font-medium" onclick="navigateToSection(2)"><i class="fas fa-info-circle mr-2"></i><span data-i18n="common.learn_more">Learn More</span></button>
                     </div>
                 </div>
                 <div class="md:w-1/2 relative">
-                    <div class="bg-white/20 backdrop-blur-md rounded-xl p-6 shadow-lg relative z-10 max-w-md mx-auto">
+                    <div class="bg-white/20 backdrop-blur-md rounded-xl p-6 shadow-lg max-w-md mx-auto">
                         <h3 class="text-white font-bold">The Tshepo Family</h3>
                         <div class="grid grid-cols-4 gap-3 my-4">
-                            <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center text-white text-xl font-bold mb-1">M</div><span class="text-xs font-medium">Mother</span></div>
-                            <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-white text-xl font-bold mb-1">F</div><span class="text-xs font-medium">Father</span></div>
-                            <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-accent1 flex items-center justify-center text-white text-xl font-bold mb-1">G</div><span class="text-xs font-medium">Gogo</span></div>
-                            <div class="family-member flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-accent2 flex items-center justify-center text-white text-xl font-bold mb-1">A</div><span class="text-xs font-medium">Aunt</span></div>
+                            <div class="flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center text-white text-xl font-bold mb-1">M</div><span class="text-xs font-medium">Mother</span></div>
+                            <div class="flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-white text-xl font-bold mb-1">F</div><span class="text-xs font-medium">Father</span></div>
+                            <div class="flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-accent1 flex items-center justify-center text-white text-xl font-bold mb-1">G</div><span class="text-xs font-medium">Gogo</span></div>
+                            <div class="flex flex-col items-center text-white"><div class="w-12 h-12 rounded-full bg-accent2 flex items-center justify-center text-white text-xl font-bold mb-1">A</div><span class="text-xs font-medium">Aunt</span></div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-white/30">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <span class="text-sm font-medium text-white/80">Total Value Created</span>
-                                    <div class="text-2xl font-bold text-white">R24,350 <span class="text-sm font-normal text-white/80">/ week</span></div>
-                                </div>
-                                <button onclick="navigateToSection(3)" class="text-white hover:underline text-sm font-medium">View Details <i class="fas fa-arrow-right ml-1"></i></button>
-                            </div>
-                        </div>
+                        <div class="mt-4 pt-3 border-t border-white/30"><div class="flex justify-between items-center"><div><span class="text-sm font-medium text-white/80">Total Value Created</span><div class="text-2xl font-bold text-white">R24,350 <span class="text-sm font-normal text-white/80">/ week</span></div></div><button onclick="navigateToSection(3)" class="text-white hover:underline text-sm font-medium">View Details <i class="fas fa-arrow-right ml-1"></i></button></div></div>
                     </div>
                 </div>
             </div>
@@ -44,84 +30,25 @@
     </section>
 
     <!-- Section 2: Our Vision -->
-    <section class="main-section bg-light">
-        <div class="container mx-auto px-4 text-center">
-            <i class="fas fa-binoculars text-5xl text-primary mb-4"></i>
-            <h2 class="section-title">Our Vision: Every Contribution Counts</h2>
-            <p class="section-subtitle">We believe in a world where all family work is seen, valued, and celebrated. FamilyValue is built for diverse, dynamic families, empowering every member by recognizing their unique contributions.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                <div class="tile"><i class="fas fa-heartbeat text-accent1"></i><h3 class="text-xl font-bold mb-2">The Unseen Engine</h3><p class="text-gray-600 text-sm">Shining a light on the essential, often invisible, labor that keeps families thriving.</p></div>
-                <div class="tile"><i class="fas fa-users-cog text-secondary"></i><h3 class="text-xl font-bold mb-2">For Every Family</h3><p class="text-gray-600 text-sm">Designed for nuclear, extended, blended, and co-parenting families, with a special focus on African contexts.</p></div>
-                <div class="tile"><i class="fas fa-hands-helping text-accent2"></i><h3 class="text-xl font-bold mb-2">Building Stronger Bonds</h3><p class="text-gray-600 text-sm">Fostering understanding, appreciation, and equity within the family unit.</p></div>
-            </div>
-        </div>
-    </section>
+    <section class="main-section bg-light"><div class="container mx-auto px-4 text-center"><i class="fas fa-binoculars text-5xl text-primary mb-4"></i><h2 class="section-title">Our Vision: Every Contribution Counts</h2><p class="section-subtitle">We believe in a world where all family work is seen, valued, and celebrated.</p><div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"><div class="tile"><i class="fas fa-heartbeat text-accent1"></i><h3 class="text-xl font-bold mb-2">The Unseen Engine</h3><p class="text-gray-600 text-sm">Shining a light on the essential, often invisible, labor that keeps families thriving.</p></div><div class="tile"><i class="fas fa-users-cog text-secondary"></i><h3 class="text-xl font-bold mb-2">For Every Family</h3><p class="text-gray-600 text-sm">Designed for nuclear, extended, blended, and co-parenting families.</p></div><div class="tile"><i class="fas fa-hands-helping text-accent2"></i><h3 class="text-xl font-bold mb-2">Building Stronger Bonds</h3><p class="text-gray-600 text-sm">Fostering understanding, appreciation, and equity within the family unit.</p></div></div></div></section>
 
     <!-- Section 3: Features -->
-    <section class="main-section bg-white">
-        <div class="container mx-auto px-4 text-center">
-            <i class="fas fa-cogs text-5xl text-primary mb-4"></i>
-            <h2 class="section-title">Core Pillars of FamilyValue</h2>
-            <p class="section-subtitle">Explore the powerful features designed to formalize, track, and value every family contribution.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                <div class="tile"><i class="fas fa-sitemap text-primary"></i><h3 class="text-xl font-bold mb-2">Dynamic Family Mapping</h3><p class="text-gray-600 text-sm">Define who's who in your unique family structure.</p></div>
-                <div class="tile"><i class="fas fa-tasks text-secondary"></i><h3 class="text-xl font-bold mb-2">Holistic Contribution Tracking</h3><p class="text-gray-600 text-sm">Log tasks, time, and resources, from chores to emotional support.</p></div>
-                <div class="tile"><i class="fas fa-balance-scale-right text-accent1"></i><h3 class="text-xl font-bold mb-2">Fair Value Attribution</h3><p class="text-gray-600 text-sm">See the true economic and non-monetary impact of contributions.</p></div>
-                <div class="tile"><i class="fas fa-user-graduate text-accent2"></i><h3 class="text-xl font-bold mb-2">Homeschooling Hub</h3><p class="text-gray-600 text-sm">Integrate educational tasks and track progress seamlessly.</p></div>
-            </div>
-        </div>
-    </section>
+    <section class="main-section bg-white"><div class="container mx-auto px-4 text-center"><i class="fas fa-cogs text-5xl text-primary mb-4"></i><h2 class="section-title">Core Pillars of FamilyValue</h2><p class="section-subtitle">Explore the powerful features designed to formalize, track, and value every family contribution.</p><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"><div class="tile"><i class="fas fa-sitemap text-primary"></i><h3 class="text-xl font-bold mb-2">Dynamic Family Mapping</h3><p class="text-gray-600 text-sm">Define who's who in your unique family structure.</p></div><div class="tile"><i class="fas fa-tasks text-secondary"></i><h3 class="text-xl font-bold mb-2">Holistic Contribution Tracking</h3><p class="text-gray-600 text-sm">Log tasks, time, and resources, from chores to emotional support.</p></div><div class="tile"><i class="fas fa-balance-scale-right text-accent1"></i><h3 class="text-xl font-bold mb-2">Fair Value Attribution</h3><p class="text-gray-600 text-sm">See the true economic and non-monetary impact of contributions.</p></div><div class="tile"><i class="fas fa-user-graduate text-accent2"></i><h3 class="text-xl font-bold mb-2">Homeschooling Hub</h3><p class="text-gray-600 text-sm">Integrate educational tasks and track progress seamlessly.</p></div></div></div></section>
 
-    <!-- Section 4: Interactive Demo -->
+    <!-- Section 4: Sazi Ecosystem Hub -->
     <section class="main-section bg-light">
         <div class="container mx-auto px-4 text-center">
-            <i class="fas fa-desktop text-5xl text-primary mb-4"></i>
-            <h2 class="section-title">Experience FamilyValue Live</h2>
-            <p class="section-subtitle">Get a glimpse of how FamilyValue brings clarity and recognition to your family's contributions. (This is a conceptual mock-up)</p>
-            <div class="bg-white rounded-xl shadow-2xl p-4 md:p-8 max-w-5xl mx-auto">
-                <!-- Demo Content -->
-                <h3 class="text-2xl font-bold text-primary">The Dlamini Family Dashboard</h3>
-                <p class="text-sm text-gray-500 mb-4">Last updated: Just now</p>
-                <div class="family-tree p-4 border rounded-lg bg-gray-50 overflow-x-auto">
-                     <ul><li><div><i class="fas fa-user-tie mr-1"></i> Gogo Thandi<span class="role">Matriarch</span></div><ul><li><div><i class="fas fa-female mr-1"></i> Zola<span class="role">Parent, Educator</span></div></li><li><div><i class="fas fa-male mr-1"></i> Bheki<span class="role">Provider</span></div></li></ul></li></ul>
-                </div>
+            <i class="fas fa-project-diagram text-5xl text-primary mb-4"></i>
+            <h2 class="section-title" data-i18n="ecosystem.title">The Sazi Ecosystem Hub</h2>
+            <p class="section-subtitle" data-i18n="ecosystem.subtitle">FamilyValue is part of a powerful ecosystem of platforms designed to empower you. Your activities here contribute to a single, holistic LifeCV.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="tile"><h3 class="text-xl font-bold mb-2">SafetyHelp</h3><p class="text-gray-600 text-sm mb-4" data-i18n="ecosystem.safetyhelp.desc">Automate OHS compliance. Every safety file you create builds your portfolio of work on your LifeCV.</p><a href="#" class="font-bold text-primary hover:underline" data-i18n="common.learn_more">Learn More</a></div>
+                <div class="tile"><h3 class="text-xl font-bold mb-2">eKhaya</h3><p class="text-gray-600 text-sm mb-4" data-i18n="ecosystem.ekhaya.desc">A rental platform built on Ubuntu. Managing properties or being a great tenant adds real-world experience to your LifeCV.</p><a href="#" class="font-bold text-primary hover:underline" data-i18n="common.learn_more">Learn More</a></div>
+                <div class="tile"><h3 class="text-xl font-bold mb-2">sazi.life</h3><p class="text-gray-600 text-sm mb-4" data-i18n="ecosystem.sazilife.desc">The central hub for learning and knowledge. Every course you complete adds a verifiable skill to your LifeCV.</p><a href="#" class="font-bold text-primary hover:underline" data-i18n="common.learn_more">Learn More</a></div>
             </div>
         </div>
     </section>
 
-    <!-- Section 5: Join Us (Pricing & Commercialization) -->
-    <section class="main-section hero-gradient text-white">
-        <div class="container mx-auto px-4 text-center">
-            <i class="fas fa-rocket text-5xl mb-4"></i>
-            <h2 class="text-4xl font-bold mb-4">Ready to Value Your Family?</h2>
-            <p class="text-lg mb-8 max-w-2xl mx-auto">Join the FamilyValue community today and start recognizing every contribution that makes your family unique and strong.</p>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                <!-- Pricing Tiers -->
-                <div class="bg-white/20 backdrop-blur-md p-6 rounded-xl border border-white/30">
-                    <h4 class="text-lg font-bold">Free</h4>
-                    <p class="text-2xl font-bold my-2">R0</p>
-                    <ul class="text-sm space-y-2 text-left"><li><i class="fas fa-check mr-2"></i>Basic Tools</li><li><i class="fas fa-times mr-2"></i>No Saving</li></ul>
-                </div>
-                 <div class="bg-white/20 backdrop-blur-md p-6 rounded-xl border border-white/30">
-                    <h4 class="text-lg font-bold">Individual Pro</h4>
-                    <p class="text-2xl font-bold my-2">R2,500 <span class="text-sm">/year</span></p>
-                     <ul class="text-sm space-y-2 text-left"><li><i class="fas fa-check mr-2"></i>Full Life CV</li><li><i class="fas fa-check mr-2"></i>1 Platform Access</li></ul>
-                </div>
-                 <div class="bg-white/90 text-primary p-6 rounded-xl border-2 border-secondary shadow-2xl">
-                    <h4 class="text-lg font-bold">Family / Practitioner</h4>
-                    <p class="text-2xl font-bold my-2">R15,000 <span class="text-sm">/year</span></p>
-                    <ul class="text-sm space-y-2 text-left"><li><i class="fas fa-check mr-2"></i>10 Users</li><li><i class="fas fa-check mr-2"></i>2 Platform Access</li></ul>
-                </div>
-                 <div class="bg-white/20 backdrop-blur-md p-6 rounded-xl border border-white/30">
-                    <h4 class="text-lg font-bold">Business</h4>
-                    <p class="text-2xl font-bold my-2">R25,000+ <span class="text-sm">/year</span></p>
-                    <ul class="text-sm space-y-2 text-left"><li><i class="fas fa-check mr-2"></i>Custom Users</li><li><i class="fas fa-check mr-2"></i>3+ Platforms</li></ul>
-                </div>
-            </div>
-             <button class="btn bg-white text-primary font-semibold text-lg px-8 py-3 hover:bg-gray-100 mt-8" onclick="openModal('signupModal')">
-                <i class="fas fa-user-plus mr-2"></i>Create Your Account
-            </button>
-        </div>
-    </section>
-
+    <!-- Section 5: Join Us -->
+    <section class="main-section hero-gradient text-white"><div class="container mx-auto px-4 text-center"><i class="fas fa-rocket text-5xl mb-4"></i><h2 class="text-4xl font-bold mb-4">Ready to Value Your Family?</h2><p class="text-lg mb-8 max-w-2xl mx-auto">Join the FamilyValue community today and start recognizing every contribution that makes your family unique and strong.</p><button class="btn bg-white text-primary font-semibold text-lg px-8 py-3 hover:bg-gray-100" onclick="openModal('signupModal')"><i class="fas fa-user-plus mr-2"></i>Create Your Account</button></div></section>
 </div>

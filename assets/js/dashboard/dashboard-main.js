@@ -1,12 +1,22 @@
+/*
+    File: assets/js/dashboard/dashboard-main.js
+    Description: Main entry point for the dashboard.
+    Changes:
+    - Implemented a new `renderDashboardHome` function to create a dynamic dashboard.
+    - The new dashboard shows profile completion status with progress bars.
+    - Loads the new i18n.js module and the user's preferred language.
+    - Correctly wires up quick action buttons on the new dashboard home.
+*/
 import { initializeAuth, onAuthChange, logout } from '../core/auth.js';
+import { initializeI18n } from '../core/i18n.js';
 import { renderLifeCvView } from './life-cv-manager.js';
 import { renderFamilyAdminView } from './admin-tools.js';
-import { renderReleaseHubView } from './release-protocol.js'; // Import the new release hub view
+import { renderReleaseHubView } from './release-protocol.js';
+import { renderSettingsView } from './settings.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     let currentUser = null;
     let db = null;
-    let familyId = null; // Store family ID for the user
 
     initializeAuth((auth, firestore) => {
         db = firestore;
@@ -15,35 +25,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = '../index.html';
             } else {
                 currentUser = user;
-                // Check if user is an admin to get familyId
-                const familyAdminDoc = await db.collection('family_admins').doc(user.uid).get();
-                if (familyAdminDoc.exists) {
-                    familyId = familyAdminDoc.data().familyId;
-                }
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                const userLang = userDoc.exists ? userDoc.data().primaryLang : 'en';
+                await initializeI18n(userLang);
                 console.log("Dashboard access granted for user:", user.uid);
-                loadDashboardComponents();
+                loadDashboardComponents(db, user);
             }
         });
     });
 
-    function loadDashboardComponents() {
+    function loadDashboardComponents(db, user) {
         fetch('../components/sidebar-dashboard.html')
             .then(res => res.ok ? res.text() : Promise.reject('Sidebar not found'))
             .then(data => {
                 const placeholder = document.getElementById('sidebar-placeholder');
                 if (placeholder) {
                     placeholder.innerHTML = data;
-                    setupSidebarListeners();
+                    setupSidebarListeners(db, user);
                 }
             }).catch(console.error);
     }
     
-    function setupSidebarListeners() {
+    function setupSidebarListeners(db, user) {
         document.querySelectorAll('.sidebar-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const view = e.currentTarget.dataset.view;
-                loadView(view);
+                loadView(view, db, user);
             });
         });
 
@@ -55,10 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        loadView('home');
+        loadView('home', db, user);
     }
 
-    function loadView(viewName) {
+    function loadView(viewName, db, user) {
         const contentArea = document.getElementById('dashboard-content-area');
         
         document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
@@ -67,34 +75,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switch(viewName) {
             case 'home':
-                contentArea.innerHTML = `
-                    <div class="dashboard-view active">
-                        <h1 class="text-3xl font-bold text-dark mb-4">Dashboard Home</h1>
-                        <p class="text-dark">Welcome, ${currentUser.displayName || 'User'}. This is your central hub for managing your personal and family legacy.</p>
-                    </div>`;
+                renderDashboardHome(contentArea, db, user);
                 break;
             case 'life-cv':
-                renderLifeCvView(contentArea, db, currentUser);
+                renderLifeCvView(contentArea, db, user);
                 break;
             case 'family-admin':
-                 renderFamilyAdminView(contentArea, db, currentUser);
+                 renderFamilyAdminView(contentArea, db, user);
                 break;
             case 'release-hub':
-                 if (familyId) {
-                    renderReleaseHubView(contentArea, db, familyId);
-                 } else {
-                    contentArea.innerHTML = `<div class="dashboard-view active"><p>You must be a family administrator to access this page.</p></div>`;
-                 }
+                 renderReleaseHubView(contentArea, db, user);
                 break;
             case 'settings':
-                 contentArea.innerHTML = `
-                    <div class="dashboard-view active">
-                        <h1 class="text-3xl font-bold text-dark mb-4">Settings</h1>
-                        <p class="text-dark">Manage your account and notification settings here.</p>
-                    </div>`;
+                 renderSettingsView(contentArea, db, user);
                 break;
             default:
                  contentArea.innerHTML = `<div class="dashboard-view active"><p>View not found.</p></div>`;
         }
     }
 });
+
+async function renderDashboardHome(contentArea, db, user) {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+    
+    const personalFields = ['name', 'dob', 'contactNumber', 'identityNumber', 'address'];
+    const professionalFields = ['experience', 'education', 'skill'];
+    const holisticFields = ['project', 'contribution'];
+
+    let personalScore = 0;
+    personalFields.forEach(field => {
+        if (userData[field] && userData[field] !== '') personalScore++;
+    });
+    const personalCompletion = Math.round((personalScore / personalFields.length) * 100);
+
+    const cvEntriesSnapshot = await db.collection('life_cvs').doc(user.uid).collection('entries').get();
+    const entryTypes = new Set(cvEntriesSnapshot.docs.map(doc => doc.data().type));
+    
+    let professionalScore = 0;
+    professionalFields.forEach(field => {
+        if (entryTypes.has(field)) professionalScore++;
+    });
+    const professionalCompletion = Math.round((professionalScore / professionalFields.length) * 100);
+
+    let holisticScore = 0;
+    holisticFields.forEach(field => {
+        if (entryTypes.has(field)) holisticScore++;
+    });
+    const holisticCompletion = Math.round((holisticScore / holisticFields.length) * 100);
+
+    contentArea.innerHTML = `
+        <div class="dashboard-view active">
+            <h1 class="text-3xl font-bold text-dark mb-2" data-i18n="dashboard.welcome" data-name="${user.displayName || 'User'}">Welcome, ${user.displayName || 'User'}!</h1>
+            <p class="text-gray-600 mb-8" data-i18n="dashboard.welcome_subtitle">This is your central hub for managing your personal and family legacy.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-dark mb-4" data-i18n="dashboard.profile_strength">Profile Strength</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700" data-i18n="dashboard.personal">Personal</span>
+                                <span class="text-sm font-medium text-gray-700">${personalCompletion}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-blue-600 h-2.5 rounded-full" style="width: ${personalCompletion}%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700" data-i18n="dashboard.professional">Professional</span>
+                                <span class="text-sm font-medium text-gray-700">${professionalCompletion}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-green-600 h-2.5 rounded-full" style="width: ${professionalCompletion}%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700" data-i18n="dashboard.holistic">Holistic</span>
+                                <span class="text-sm font-medium text-gray-700">${holisticCompletion}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-purple-600 h-2.5 rounded-full" style="width: ${holisticCompletion}%"></div></div>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <a href="#" class="quick-action-link text-primary hover:underline" data-view="life-cv" data-i18n="dashboard.complete_profile_link">Complete Your Profile <i class="fas fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-dark mb-4" data-i18n="dashboard.quick_actions">Quick Actions</h2>
+                    <div class="space-y-3">
+                        <button class="quick-action-link w-full text-left p-3 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-3" data-view="life-cv">
+                            <i class="fas fa-id-card w-6 text-blue-500"></i><span data-i18n="dashboard.manage_cv">Manage My Life CV</span>
+                        </button>
+                        <button class="quick-action-link w-full text-left p-3 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-3" data-view="family-admin">
+                            <i class="fas fa-users-cog w-6 text-green-500"></i><span data-i18n="dashboard.family_admin">Family Admin</span>
+                        </button>
+                        <button class="quick-action-link w-full text-left p-3 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-3" data-view="release-hub">
+                            <i class="fas fa-check-double w-6 text-purple-500"></i><span data-i18n="dashboard.release_hub">Release Hub</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    contentArea.querySelectorAll('.quick-action-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = e.currentTarget.dataset.view;
+            document.querySelector(`.main-container .sidebar-link[data-view="${view}"]`).click();
+        });
+    });
+}

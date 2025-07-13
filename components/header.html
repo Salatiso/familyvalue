@@ -2,37 +2,33 @@
     <div class="container mx-auto px-4 py-3">
         <div class="flex justify-between items-center">
             <a href="index.html" class="flex items-center space-x-2">
-                <div id="logo-container" class="h-10 w-10">
-                    <!-- SVG logo will be injected here -->
-                </div>
+                <div id="logo-container" class="h-10 w-10"></div>
                 <span class="font-bold text-xl text-dark" style="font-family: 'Ubuntu', sans-serif;">FamilyValue</span>
             </a>
             <div class="hidden md:flex items-center space-x-3 lg:space-x-6">
-                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="0">Home</a>
-                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="1">Our Vision</a>
-                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="2">Features</a>
-                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="3">Demo</a>
-                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="4">Join Us</a>
+                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="0" data-i18n="header.home">Home</a>
+                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="1" data-i18n="header.vision">Our Vision</a>
+                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="2" data-i18n="header.features">Features</a>
+                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="3" data-i18n="header.ecosystem">Ecosystem</a>
+                <a href="#" class="nav-link text-dark hover:text-primary transition-colors" data-section="4" data-i18n="header.join">Join Us</a>
             </div>
             <div class="flex items-center space-x-4">
                 <div id="language-selector-placeholder" class="relative"></div>
                 <div id="theme-selector-placeholder" class="relative"></div>
-                <a href="#" class="btn btn-outline-primary hidden sm:inline-flex" id="login-btn">Log In</a>
-                <a href="#" class="btn btn-primary" id="signup-btn">Sign Up</a>
+                <a href="#" class="btn btn-outline-primary hidden sm:inline-flex" id="login-btn" data-i18n="header.login">Log In</a>
+                <a href="#" class="btn btn-primary" id="signup-btn" data-i18n="header.signup">Sign Up</a>
             </div>
             <div class="md:hidden">
-                <button id="mobileMenuButton" class="text-dark focus:outline-none">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
+                <button id="mobileMenuButton" class="text-dark focus:outline-none"><i class="fas fa-bars text-2xl"></i></button>
             </div>
         </div>
         <div id="mobileMenu" class="hidden md:hidden mt-2 py-2 bg-white rounded-lg shadow-xl">
-            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="0">Home</a>
-            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="1">Our Vision</a>
-            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="2">Features</a>
-            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="3">Demo</a>
-            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="4">Join Us</a>
-            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-100" id="login-btn-mobile">Log In</a>
+            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="0" data-i18n="header.home">Home</a>
+            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="1" data-i18n="header.vision">Our Vision</a>
+            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="2" data-i18n="header.features">Features</a>
+            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="3" data-i18n="header.ecosystem">Ecosystem</a>
+            <a href="#" class="nav-link block px-4 py-2 text-sm hover:bg-gray-100" data-section="4" data-i18n="header.join">Join Us</a>
+            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-100" id="login-btn-mobile" data-i18n="header.login">Log In</a>
         </div>
     </div>
 </header>

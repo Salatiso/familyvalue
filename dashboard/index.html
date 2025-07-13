@@ -17,6 +17,8 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .form-input { @apply mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary; }
+        .form-checkbox { @apply h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary; }
     </style>
 </head>
 <body class="theme-earthy-default bg-light">
@@ -26,13 +28,15 @@
 
         <main class="main-content p-6 sm:p-8">
             <div id="dashboard-content-area">
-                <!-- Dashboard views will be rendered here -->
                 <div class="text-center py-16">
                     <i class="fas fa-spinner fa-spin text-4xl text-primary"></i>
                 </div>
             </div>
         </main>
     </div>
+
+    <!-- Modals Placeholder (for success/confirmation modals used in dashboard) -->
+    <div id="modals-placeholder"></div>
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -42,7 +46,5 @@
     <!-- Core Scripts -->
     <script type="module" src="../assets/js/core/auth.js"></script>
     <script type="module" src="../assets/js/dashboard/dashboard-main.js"></script>
-    <!-- Add new script for admin tools -->
-    <script type="module" src="../assets/js/dashboard/admin-tools.js"></script>
 </body>
 </html>
