@@ -4,7 +4,10 @@
     Changes:
     - Replaced all `alert()` calls with the new custom modal system (`openConfirmationModal` or a simple message modal).
     - The core logic for creating a family and inviting members remains the same, but with improved user feedback.
+    - Uses root-relative path to fetch `delegation-of-authority.html`.
 */
+import { translatePage } from '../core/i18n.js';
+
 export async function renderFamilyAdminView(contentArea, db, user) {
     const familyAdminDoc = await db.collection('family_admins').doc(user.uid).get();
     if (familyAdminDoc.exists) {
@@ -42,7 +45,7 @@ function renderCreateFamilyWizard(contentArea, db, user) {
                 <div id="delegation-content" class="h-64 overflow-y-auto border p-4 rounded-md bg-gray-50 text-left text-sm">Loading...</div>
                 <div class="mt-4 flex items-center"><input type="checkbox" id="accept-doa-checkbox" class="h-4 w-4 rounded"><label for="accept-doa-checkbox" class="ml-2 text-sm text-gray-700">I have read and accept the Delegation of Authority.</label></div>
                 <div class="flex justify-between mt-6"><button id="wizard-back-btn" class="btn bg-gray-300 text-gray-700">Back</button><button id="wizard-finish-btn" class="btn btn-primary">Finish & Create Family</button></div>`;
-            fetch('../components/delegation-of-authority.html').then(res => res.text()).then(html => document.getElementById('delegation-content').innerHTML = html);
+            fetch('/familyvalue/components/delegation-of-authority.html').then(res => res.text()).then(html => document.getElementById('delegation-content').innerHTML = html);
         }
     }
 
@@ -117,6 +120,8 @@ async function renderAdminDashboard(contentArea, db, user, familyId) {
         </div>
     `;
     attachAdminDashboardListeners(db, user, familyId);
+    // Translate the newly rendered content
+    translatePage(localStorage.getItem('familyValueLang') || 'en');
 }
 
 function attachAdminDashboardListeners(db, user, familyId) {

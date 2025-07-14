@@ -8,6 +8,8 @@
     - Event listeners are now attached to the approve/deny buttons.
     - Uses custom modals for user feedback instead of `alert()`.
 */
+import { translatePage } from '../core/i18n.js';
+
 export async function initiateReleaseRequest(db, user, entryId, entryTitle) {
     try {
         const userDoc = await db.collection('users').doc(user.uid).get();
@@ -22,7 +24,7 @@ export async function initiateReleaseRequest(db, user, entryId, entryTitle) {
 
         if (isAdult && !familyId) {
             await db.collection('life_cvs').doc(user.uid).collection('entries').doc(entryId).update({ releaseStatus: 'approved' });
-            openModal('successModal'); // Provide feedback
+            openModal('successModal');
             return true;
         }
         
@@ -33,7 +35,7 @@ export async function initiateReleaseRequest(db, user, entryId, entryTitle) {
 
         const existingRequest = await db.collection('families').doc(familyId).collection('release_requests')
             .where('entryId', '==', entryId)
-            .where('status', 'in', ['pending_guardian', 'pending_executive'])
+            .where('status', 'in', ['pending_executive'])
             .get();
 
         if (!existingRequest.empty) {
@@ -48,7 +50,7 @@ export async function initiateReleaseRequest(db, user, entryId, entryTitle) {
             requesterName: user.displayName || user.email,
             entryId: entryId,
             entryTitle: entryTitle,
-            status: 'pending_executive', // Simplified for now
+            status: 'pending_executive',
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             history: [{ status: 'created', timestamp: firebase.firestore.FieldValue.serverTimestamp(), actor: user.uid }]
         });
@@ -65,7 +67,8 @@ export async function initiateReleaseRequest(db, user, entryId, entryTitle) {
 export async function renderReleaseHubView(contentArea, db, user) {
     const familyId = await getFamilyIdForUser(db, user.uid);
     if (!familyId) {
-        contentArea.innerHTML = `<div class="dashboard-view active"><p class="text-gray-600" data-i18n="release.no_family">You are not currently part of a family hub. The Release Hub is used to approve requests from family members.</p></div>`;
+        contentArea.innerHTML = `<div class="dashboard-view active"><p class="text-gray-600" data-i18n="release.no_family"></p></div>`;
+        translatePage(localStorage.getItem('familyValueLang') || 'en');
         return;
     }
 
@@ -145,7 +148,6 @@ async function denyRequest(db, familyId, approver, requestId, entryId, requester
 async function getFamilyIdForUser(db, userId) {
     const adminDoc = await db.collection('family_admins').doc(userId).get();
     if (adminDoc.exists) return adminDoc.data().familyId;
-    // In a real app, also check a 'members' collection/field. For now, this is sufficient.
     return null;
 }
 

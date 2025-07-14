@@ -9,6 +9,7 @@
     - Added logic to handle file parsing and creating a new CV entry from the text.
 */
 import { initiateReleaseRequest } from './release-protocol.js';
+import { translatePage } from '../core/i18n.js';
 
 function loadParserScripts() {
     if (!document.getElementById('pdf-js-script')) {
@@ -16,7 +17,10 @@ function loadParserScripts() {
         pdfScript.id = 'pdf-js-script';
         pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js';
         document.head.appendChild(pdfScript);
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+        // Set worker source for pdf.js
+        pdfScript.onload = () => {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+        };
     }
     if (!document.getElementById('mammoth-js-script')) {
         const mammothScript = document.createElement('script');
@@ -33,31 +37,31 @@ export async function renderLifeCvView(contentArea, db, user) {
 
     contentArea.innerHTML = `
         <div class="dashboard-view active" id="life-cv-view">
-            <h1 class="text-3xl font-bold text-dark mb-8" data-i18n="cv.title">My Life CV</h1>
+            <h1 class="text-3xl font-bold text-dark mb-8" data-i18n="cv.title"></h1>
 
             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h2 class="text-xl font-bold text-dark mb-4" data-i18n="cv.personal_info.title">Personal Information</h2>
+                <h2 class="text-xl font-bold text-dark mb-4" data-i18n="cv.personal_info.title"></h2>
                 <form id="personal-info-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div><label for="pi-name" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.name">Full Name</label><input type="text" id="pi-name" value="${userData.name || ''}" class="mt-1 block w-full form-input"></div>
-                    <div><label for="pi-dob" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.dob">Date of Birth</label><input type="date" id="pi-dob" value="${userData.dob || ''}" class="mt-1 block w-full form-input"></div>
-                    <div><label for="pi-contact" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.contact">Contact Number</label><input type="tel" id="pi-contact" value="${userData.contactNumber || ''}" class="mt-1 block w-full form-input"></div>
-                    <div><label for="pi-id" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.id_number">Identity Number</label><input type="text" id="pi-id" value="${userData.identityNumber || ''}" class="mt-1 block w-full form-input"></div>
-                    <div class="md:col-span-2"><label for="pi-address" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.address">Residential Address</label><textarea id="pi-address" rows="3" class="mt-1 block w-full form-input">${userData.address || ''}</textarea></div>
-                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.socials">Social Media Links</label><input type="url" id="pi-linkedin" value="${userData.linkedin || ''}" class="mt-1 block w-full form-input" placeholder="LinkedIn Profile URL"></div>
-                    <div class="md:col-span-2 text-right"><button type="submit" class="btn btn-primary" data-i18n="common.save_changes">Save Changes</button></div>
+                    <div><label for="pi-name" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.name"></label><input type="text" id="pi-name" value="${userData.name || ''}" class="mt-1 block w-full form-input"></div>
+                    <div><label for="pi-dob" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.dob"></label><input type="date" id="pi-dob" value="${userData.dob || ''}" class="mt-1 block w-full form-input"></div>
+                    <div><label for="pi-contact" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.contact"></label><input type="tel" id="pi-contact" value="${userData.contactNumber || ''}" class="mt-1 block w-full form-input"></div>
+                    <div><label for="pi-id" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.id_number"></label><input type="text" id="pi-id" value="${userData.identityNumber || ''}" class="mt-1 block w-full form-input"></div>
+                    <div class="md:col-span-2"><label for="pi-address" class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.address"></label><textarea id="pi-address" rows="3" class="mt-1 block w-full form-input">${userData.address || ''}</textarea></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700" data-i18n="cv.personal_info.socials"></label><input type="url" id="pi-linkedin" value="${userData.linkedin || ''}" class="mt-1 block w-full form-input" placeholder="LinkedIn Profile URL"></div>
+                    <div class="md:col-span-2 text-right"><button type="submit" class="btn btn-primary" data-i18n="common.save_changes"></button></div>
                 </form>
             </div>
             
             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h2 class="text-xl font-bold text-dark mb-4" data-i18n="cv.upload.title">Upload & Import CV</h2>
-                <p class="text-sm text-gray-600 mb-4" data-i18n="cv.upload.subtitle">Upload a PDF or Word document to automatically extract text. This text will be added as a new entry in your CV for you to review.</p>
-                <div class="flex items-center gap-4"><input type="file" id="cv-upload-input" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.doc,.docx"><button id="process-cv-btn" class="btn btn-secondary" data-i18n="cv.upload.process_btn">Process</button></div>
-                <div id="cv-parse-spinner" class="hidden text-center mt-4"><i class="fas fa-spinner fa-spin text-2xl text-primary"></i><p data-i18n="cv.upload.processing" class="mt-2">Processing file...</p></div>
+                <h2 class="text-xl font-bold text-dark mb-4" data-i18n="cv.upload.title"></h2>
+                <p class="text-sm text-gray-600 mb-4" data-i18n="cv.upload.subtitle"></p>
+                <div class="flex items-center gap-4"><input type="file" id="cv-upload-input" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.doc,.docx"><button id="process-cv-btn" class="btn btn-secondary" data-i18n="cv.upload.process_btn"></button></div>
+                <div id="cv-parse-spinner" class="hidden text-center mt-4"><i class="fas fa-spinner fa-spin text-2xl text-primary"></i><p data-i18n="cv.upload.processing" class="mt-2"></p></div>
             </div>
 
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-dark" data-i18n="cv.entries.title">Life CV Entries</h2>
-                <button id="add-entry-btn" class="btn btn-primary"><i class="fas fa-plus mr-2"></i><span data-i18n="cv.entries.add_btn">Add New Entry</span></button>
+                <h2 class="text-xl font-bold text-dark" data-i18n="cv.entries.title"></h2>
+                <button id="add-entry-btn" class="btn btn-primary"><i class="fas fa-plus mr-2"></i><span data-i18n="cv.entries.add_btn"></span></button>
             </div>
             
             <div id="entry-form-container" class="bg-white p-6 rounded-lg shadow-md mb-8 hidden">
@@ -72,10 +76,11 @@ export async function renderLifeCvView(contentArea, db, user) {
             </div>
 
             <div id="cv-entries-list" class="space-y-4">
-                <p class="text-center text-gray-500 py-8" data-i18n="common.loading">Loading Life CV...</p>
+                <p class="text-center text-gray-500 py-8" data-i18n="common.loading"></p>
             </div>
         </div>
     `;
+    translatePage(localStorage.getItem('familyValueLang') || 'en');
     attachLifeCvListeners(db, user);
     loadCvEntries(db, user);
 }
@@ -155,7 +160,7 @@ async function handleCvUpload(db, user) {
 
     try {
         if (file.type === "application/pdf") {
-            const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+            const pdf = await window.pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const text = await page.getTextContent();
@@ -163,7 +168,7 @@ async function handleCvUpload(db, user) {
             }
         } else if (file.name.endsWith('.docx')) {
             const arrayBuffer = await file.arrayBuffer();
-            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            const result = await window.mammoth.extractRawText({ arrayBuffer: arrayBuffer });
             textContent = result.value;
         } else { throw new Error("Unsupported file type."); }
 

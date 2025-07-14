@@ -27,35 +27,37 @@ export async function renderSettingsView(contentArea, db, user) {
 
     contentArea.innerHTML = `
         <div class="dashboard-view active" id="settings-view">
-            <h1 class="text-3xl font-bold text-dark mb-8" data-i18n="settings.title">Settings</h1>
+            <h1 class="text-3xl font-bold text-dark mb-8" data-i18n="settings.title"></h1>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="md:col-span-2 space-y-8">
                     <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h2 class="text-xl font-bold text-dark mb-4" data-i18n="settings.account.title">Account Information</h2>
+                        <h2 class="text-xl font-bold text-dark mb-4" data-i18n="settings.account.title"></h2>
                         <form id="account-settings-form" class="space-y-4">
-                            <div><label for="setting-name" class="block text-sm font-medium text-gray-700" data-i18n="settings.account.name">Full Name</label><input type="text" id="setting-name" value="${user.displayName || ''}" class="mt-1 block w-full form-input"></div>
-                            <div><label for="setting-email" class="block text-sm font-medium text-gray-700" data-i18n="settings.account.email">Email Address</label><input type="email" id="setting-email" value="${user.email || ''}" class="mt-1 block w-full form-input bg-gray-100" disabled><p class="text-xs text-gray-500 mt-1" data-i18n="settings.account.email_note">Email cannot be changed.</p></div>
-                            <div class="text-right"><button type="submit" class="btn btn-primary" data-i18n="common.update_account">Update Account</button></div>
+                            <div><label for="setting-name" class="block text-sm font-medium text-gray-700" data-i18n="settings.account.name"></label><input type="text" id="setting-name" value="${user.displayName || ''}" class="mt-1 block w-full form-input"></div>
+                            <div><label for="setting-email" class="block text-sm font-medium text-gray-700" data-i18n="settings.account.email"></label><input type="email" id="setting-email" value="${user.email || ''}" class="mt-1 block w-full form-input bg-gray-100" disabled><p class="text-xs text-gray-500 mt-1" data-i18n="settings.account.email_note"></p></div>
+                            <div class="text-right"><button type="submit" class="btn btn-primary" data-i18n="common.update_account"></button></div>
                         </form>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h2 class="text-xl font-bold text-dark mb-4" data-i18n="settings.language.title">Language Preference</h2>
-                        <p class="text-sm text-gray-600 mb-4" data-i18n="settings.language.subtitle">Choose your primary language for the platform.</p>
+                        <h2 class="text-xl font-bold text-dark mb-4" data-i18n="settings.language.title"></h2>
+                        <p class="text-sm text-gray-600 mb-4" data-i18n="settings.language.subtitle"></p>
                         <select id="language-preference-select" class="w-full form-input">${langOptions}</select>
                     </div>
                 </div>
                 <div class="md:col-span-1">
                      <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h2 class="text-xl font-bold text-dark mb-4" data-i18n="settings.notifications.title">Notifications</h2>
+                        <h2 class="text-xl font-bold text-dark mb-4" data-i18n="settings.notifications.title"></h2>
                         <div class="space-y-4">
-                            <label class="flex items-center"><input type="checkbox" class="form-checkbox h-5 w-5 text-primary rounded" checked><span class="ml-2 text-gray-700" data-i18n="settings.notifications.email_updates">Email me with product updates.</span></label>
-                            <label class="flex items-center"><input type="checkbox" class="form-checkbox h-5 w-5 text-primary rounded" checked><span class="ml-2 text-gray-700" data-i18n="settings.notifications.family_activity">Notify me of family activity.</span></label>
+                            <label class="flex items-center"><input type="checkbox" class="form-checkbox" checked><span class="ml-2 text-gray-700" data-i18n="settings.notifications.email_updates"></span></label>
+                            <label class="flex items-center"><input type="checkbox" class="form-checkbox" checked><span class="ml-2 text-gray-700" data-i18n="settings.notifications.family_activity"></span></label>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     `;
+    
+    translatePage(localStorage.getItem('familyValueLang') || 'en');
 
     document.getElementById('account-settings-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -71,7 +73,8 @@ export async function renderSettingsView(contentArea, db, user) {
         const newLang = e.target.value;
         try {
             await db.collection('users').doc(user.uid).update({ primaryLang: newLang });
-            await translatePage(newLang); // Re-translate the current page
+            localStorage.setItem('familyValueLang', newLang); // Also update local storage for immediate effect
+            await translatePage(newLang);
             openModal('successModal');
         } catch (error) { console.error("Error updating language preference:", error); }
     });
