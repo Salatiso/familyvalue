@@ -73,7 +73,7 @@ export async function renderSettingsView(contentArea, db, user) {
         const newLang = e.target.value;
         try {
             await db.collection('users').doc(user.uid).update({ primaryLang: newLang });
-            localStorage.setItem('familyValueLang', newLang); // Also update local storage for immediate effect
+            localStorage.setItem('familyValueLang', newLang);
             await translatePage(newLang);
             openModal('successModal');
         } catch (error) { console.error("Error updating language preference:", error); }

@@ -17,7 +17,6 @@ function loadParserScripts() {
         pdfScript.id = 'pdf-js-script';
         pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js';
         document.head.appendChild(pdfScript);
-        // Set worker source for pdf.js
         pdfScript.onload = () => {
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
         };
@@ -55,7 +54,7 @@ export async function renderLifeCvView(contentArea, db, user) {
             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                 <h2 class="text-xl font-bold text-dark mb-4" data-i18n="cv.upload.title"></h2>
                 <p class="text-sm text-gray-600 mb-4" data-i18n="cv.upload.subtitle"></p>
-                <div class="flex items-center gap-4"><input type="file" id="cv-upload-input" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.doc,.docx"><button id="process-cv-btn" class="btn btn-secondary" data-i18n="cv.upload.process_btn"></button></div>
+                <div class="flex items-center gap-4"><input type="file" id="cv-upload-input" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.doc,.docx,.json,.txt"><button id="process-cv-btn" class="btn btn-secondary" data-i18n="cv.upload.process_btn"></button></div>
                 <div id="cv-parse-spinner" class="hidden text-center mt-4"><i class="fas fa-spinner fa-spin text-2xl text-primary"></i><p data-i18n="cv.upload.processing" class="mt-2"></p></div>
             </div>
 
@@ -68,7 +67,7 @@ export async function renderLifeCvView(contentArea, db, user) {
                 <h2 class="text-xl font-bold text-dark mb-4">New CV Entry</h2>
                 <form id="life-cv-entry-form" class="space-y-4">
                     <input type="hidden" id="entry-id">
-                    <div><label for="entry-type" class="block text-sm font-medium text-gray-700">Entry Type</label><select id="entry-type" class="w-full mt-1 p-2 border rounded-md"><option value="experience">Experience</option><option value="skill">Skill</option><option value="project">Project</option><option value="education">Education</option><option value="contribution">Contribution</option></select></div>
+                    <div><label for="entry-type" class="block text-sm font-medium text-gray-700">Entry Type</label><select id="entry-type" class="w-full mt-1 p-2 border rounded-md"><option value="experience">Experience</option><option value="skill">Skill</option><option value="project">Project / Portfolio</option><option value="education">Education</option><option value="contribution">Contribution</option></select></div>
                     <div><label for="entry-title" class="block text-sm font-medium text-gray-700">Title</label><input type="text" id="entry-title" class="w-full mt-1 p-2 border rounded-md" required></div>
                     <div><label for="entry-description" class="block text-sm font-medium text-gray-700">Description</label><textarea id="entry-description" rows="3" class="w-full mt-1 p-2 border rounded-md"></textarea></div>
                     <div class="flex justify-end gap-4"><button type="button" id="cancel-entry-btn" class="btn bg-gray-200 text-gray-700">Cancel</button><button type="submit" class="btn btn-primary">Save Entry</button></div>
@@ -156,37 +155,81 @@ async function handleCvUpload(db, user) {
     
     const file = fileInput.files[0];
     spinner.classList.remove('hidden');
-    let textContent = '';
-
+    
     try {
-        if (file.type === "application/pdf") {
-            const pdf = await window.pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const text = await page.getTextContent();
-                textContent += text.items.map(item => item.str).join(' ');
+        if (file.type === "application/json") {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const jsonData = JSON.parse(event.target.result);
+                    if (jsonData.entries && Array.isArray(jsonData.entries)) {
+                        const batch = db.batch();
+                        jsonData.entries.forEach(entry => {
+                            const newEntryRef = db.collection('life_cvs').doc(user.uid).collection('entries').doc();
+                            // Sanitize and validate entry before adding
+                            const sanitizedEntry = {
+                                type: entry.type || 'contribution',
+                                title: entry.title || 'Imported Entry',
+                                description: entry.description || '',
+                                sourcePlatform: entry.sourcePlatform || 'json_import',
+                                releaseStatus: 'private',
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                metadata: entry.metadata || {}
+                            };
+                            batch.set(newEntryRef, sanitizedEntry);
+                        });
+                        await batch.commit();
+                        openConfirmationModal('Import Success', 'JSON data imported successfully. Please review the new entries.', () => {});
+                    } else {
+                        throw new Error("Invalid JSON format. Expected an object with an 'entries' array.");
+                    }
+                } catch (jsonError) {
+                    console.error("Error parsing JSON:", jsonError);
+                    openConfirmationModal('Import Error', `Failed to parse JSON file: ${jsonError.message}`, () => {});
+                } finally {
+                    spinner.classList.add('hidden');
+                    loadCvEntries(db, user);
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            let textContent = '';
+            if (file.type === "application/pdf") {
+                const pdf = await window.pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const text = await page.getTextContent();
+                    textContent += text.items.map(item => item.str).join(' ');
+                }
+            } else if (file.name.endsWith('.docx')) {
+                const arrayBuffer = await file.arrayBuffer();
+                const result = await window.mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                textContent = result.value;
+            } else if (file.type === "text/plain") {
+                textContent = await file.text();
+            } else {
+                throw new Error("Unsupported file type for text extraction.");
             }
-        } else if (file.name.endsWith('.docx')) {
-            const arrayBuffer = await file.arrayBuffer();
-            const result = await window.mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-            textContent = result.value;
-        } else { throw new Error("Unsupported file type."); }
 
-        const entryData = {
-            type: 'contribution',
-            title: `CV Uploaded: ${file.name}`,
-            description: textContent.substring(0, 5000),
-            releaseStatus: 'private',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await db.collection('life_cvs').doc(user.uid).collection('entries').add(entryData);
-        loadCvEntries(db, user);
-        openModal('successModal');
+            const entryData = {
+                type: 'contribution',
+                title: `CV Uploaded: ${file.name}`,
+                description: textContent.substring(0, 5000), // Firestore limit
+                releaseStatus: 'private',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await db.collection('life_cvs').doc(user.uid).collection('entries').add(entryData);
+            spinner.classList.add('hidden');
+            loadCvEntries(db, user);
+            openModal('successModal');
+        }
     } catch (error) {
         console.error("Error processing CV:", error);
-    } finally {
         spinner.classList.add('hidden');
+        openConfirmationModal('Upload Error', `Could not process file: ${error.message}`, () => {});
+    } finally {
         fileInput.value = '';
     }
 }

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sazi Ecosystem - Life CV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-color: #3b82f6; /* blue-500 */
+            --brand-color-dark: #60a5fa; /* blue-400 */
+        }
+        body { 
+            font-family: 'Manrope', sans-serif; 
+            background-color: #f1f5f9; /* slate-100 */
+            color: #0f172a; /* slate-900 */
+            line-height: 1.6; 
+        }
+        .dark body {
+            background-color: #020617; /* slate-950 */
+            color: #e2e8f0; /* slate-200 */
+        }
+        .document-page { 
+            width: 210mm; 
+            min-height: 297mm; 
+            background-color: #ffffff; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            margin: 2rem auto; 
+            border-radius: 0.5rem; 
+            border: 1px solid #e2e8f0; /* slate-200 */
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+        }
+        .dark .document-page {
+            background-color: #1e293b; /* slate-800 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border-color: #334155; /* slate-700 */
+        }
+        .cover-page { justify-content: space-between; align-items: center; padding: 2rem 1.5rem; text-align: center; }
+        .page-footer { position: absolute; bottom: 1cm; left: 2cm; right: 2cm; display: flex; justify-content: space-between; font-size: 10pt; color: #64748b; }
+        .content-page { padding: 2.5cm 2cm; flex-grow: 1; position: relative; }
+        h1, h2, h3 { font-family: 'Roboto Slab', serif; color: var(--brand-color); }
+        .dark h1, .dark h2, .dark h3 { color: var(--brand-color-dark); }
+        h1 { font-size: 2.25rem; font-weight: 900; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .dark h2 { border-color: #475569; }
+        .cv-section .section-item { margin-bottom: 1.5rem; page-break-inside: avoid; }
+        .cv-section .item-title { font-weight: bold; font-size: 1.1rem; }
+        .cv-section .item-subtitle { font-size: 0.9rem; color: #64748b; margin-bottom: 0.25rem; }
+        .dark .cv-section .item-subtitle { color: #94a3b8; }
+        @media print {
+            body { background-color: white; color: black; }
+            .document-page { box-shadow: none; margin: 0; border: none; page-break-after: always; color: black; background-color: white; }
+            .dark .document-page, .dark body { background-color: white !important; color: black !important; }
+            .dark h1, .dark h2, .dark h3 { color: var(--brand-color) !important; }
+        }
+    </style>
+</head>
+<body>
+    <!-- This is a template file. The content will be dynamically populated by JavaScript -->
+    <div id="cv-container">
+        <!-- Pages will be generated here -->
+    </div>
+
+    <script>
+        // This script is for demonstration and will be controlled by the main application
+        async function generateCV(userId) {
+            // In a real scenario, this would fetch data from Firestore
+            // For now, we use mock data
+            const mockUserData = {
+                name: "Salatiso Mdeni",
+                email: "salatiso.m@example.com",
+                contactNumber: "+27 12 345 6789",
+                linkedin: "linkedin.com/in/salatiso",
+                tagline: "Visionary Leader & Ecosystem Architect",
+                summary: "A driven and resilient leader from the Transkei, passionate about leveraging technology to empower communities and build sustainable ecosystems. With a background that began with education under a tree, I bring a unique perspective on overcoming adversity and a deep commitment to creating tools that provide tangible value and foster growth."
+            };
+
+            const mockCvEntries = [
+                { type: "experience", title: "Founder & CEO", metadata: { company: "Sazi Ecosystem", startDate: "2022-01", endDate: "Present" }, description: "Conceptualized and led the development of a suite of interconnected platforms including SafetyHelp, FamilyValue, and eKhaya, focusing on user empowerment and data portability." },
+                { type: "skill", title: "Ecosystem Architecture", description: "Designed and specified a multi-platform technical architecture using Firebase for centralized authentication (SSO) and a unified data model (LifeCV Hub)." },
+                { type: "portfolio", title: "SafetyHelp OHS Platform", description: "Successfully launched a SaaS platform that automates and simplifies occupational health and safety compliance for businesses in South Africa." },
+                { type: "contribution", title: "Community Mentorship", description: "Provided pro-bono strategic advice and mentorship to three local startups in the ed-tech and community-tech space." },
+                { type: "education", title: "Self-Taught, Lifelong Learner", metadata: { company: "School of Life (Under a Tree)", startDate: "1988", endDate: "Present" }, description: "Acquired a foundational education through perseverance and a deep-seated desire for knowledge, a testament to the power of resilience." }
+            ];
+
+            const container = document.getElementById('cv-container');
+            container.innerHTML = ''; // Clear container
+
+            // Cover Page
+            const coverPage = document.createElement('div');
+            coverPage.className = 'document-page cover-page';
+            coverPage.innerHTML = `
+                <div class="text-center mb-8">
+                    <img src="https://placehold.co/120x120/3b82f6/FFFFFF?text=SM" alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500 dark:border-blue-400 inline-block">
+                </div>
+                <div class="flex flex-col justify-center items-center flex-grow">
+                    <h1 class="text-4xl font-black" style="font-family: 'Roboto Slab', serif; color: var(--brand-color);">${mockUserData.name}</h1>
+                    <p class="text-lg mt-2 text-slate-600 dark:text-slate-400">${mockUserData.tagline}</p>
+                </div>
+                <div class="w-full max-w-md mx-auto text-left text-sm">
+                    <div class="border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-2">
+                        <div class="flex"><strong class="w-28 text-slate-500">Email:</strong><span>${mockUserData.email}</span></div>
+                        <div class="flex"><strong class="w-28 text-slate-500">Phone:</strong><span>${mockUserData.contactNumber}</span></div>
+                        <div class="flex"><strong class="w-28 text-slate-500">LinkedIn:</strong><span>${mockUserData.linkedin}</span></div>
+                        <div class="flex"><strong class="w-28 text-slate-500">Date:</strong><span>${new Date().toLocaleDateString('en-CA')}</span></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(coverPage);
+
+            // Content Page
+            const contentPage = document.createElement('div');
+            contentPage.className = 'document-page content-page';
+            
+            let contentHTML = `
+                <section class="cv-section">
+                    <h2 class="!mt-0"><span><i class="fas fa-user-circle mr-3 text-slate-400"></i>Holistic Summary</span></h2>
+                    <p>${mockUserData.summary}</p>
+                </section>
+            `;
+
+            const sections = {
+                experience: { title: 'Professional & Life Experience', icon: 'fa-briefcase', entries: [] },
+                skill: { title: 'Acquired Skills & Knowledge', icon: 'fa-cogs', entries: [] },
+                portfolio: { title: 'Portfolio of Work', icon: 'fa-stream', entries: [] },
+                contribution: { title: 'Community Contributions', icon: 'fa-users', entries: [] },
+                education: { title: 'Formal Credentials', icon: 'fa-graduation-cap', entries: [] }
+            };
+
+            mockCvEntries.forEach(entry => {
+                if(sections[entry.type]) {
+                    sections[entry.type].entries.push(entry);
+                }
+            });
+
+            for(const key in sections){
+                const section = sections[key];
+                if(section.entries.length > 0){
+                    contentHTML += `<section class="cv-section"><h2><span><i class="fas ${section.icon} mr-3 text-slate-400"></i>${section.title}</span></h2>`;
+                    section.entries.forEach(entry => {
+                        contentHTML += `
+                            <div class="section-item">
+                                <div class="item-title">${entry.title}</div>
+                                ${entry.metadata && (entry.metadata.company || entry.metadata.startDate) ? `<div class="item-subtitle">${entry.metadata.company || ''} | ${entry.metadata.startDate || ''} - ${entry.metadata.endDate || ''}</div>` : ''}
+                                <p class="text-slate-600 dark:text-slate-400">${entry.description}</p>
+                            </div>
+                        `;
+                    });
+                    contentHTML += `</section>`;
+                }
+            }
+
+            contentPage.innerHTML = contentHTML;
+            container.appendChild(contentPage);
+        }
+
+        // Run the generation on load for demonstration
+        window.onload = () => generateCV('mockUserId');
+    </script>
+</body>
+</html>

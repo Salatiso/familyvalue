@@ -19,20 +19,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentUser = null;
     let db = null;
 
-    initializeAuth((auth, firestore) => {
+    // Use the central 'lifecv-d2724' Firebase project
+    const firebaseConfig = {
+        apiKey: "AIzaSyD_pRVkeVzciCPowxsj44NRVlbyZvFPueI",
+        authDomain: "lifecv-d2724.firebaseapp.com",
+        projectId: "lifecv-d2724",
+        storageBucket: "lifecv-d2724.appspot.com",
+        messagingSenderId: "1039752653127",
+        appId: "1:1039752653127:web:54afa09b21c98ef231c462",
+        measurementId: "G-BDCNHBQTR2"
+    };
+
+    initializeAuth(firebaseConfig, (auth, firestore) => {
         db = firestore;
         onAuthChange(auth, async (user) => {
             if (!user) {
-                // This check is now primarily handled by the auth module's redirect logic,
-                // but it's good practice to keep it as a fallback.
                 window.location.href = '/familyvalue/index.html';
             } else {
                 currentUser = user;
-                // Fetch user's preferred language from Firestore
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 const userLang = userDoc.exists ? userDoc.data().primaryLang : 'en';
                 
-                // Initialize i18n with the user's language BEFORE loading components
                 await initializeI18n(userLang);
                 
                 console.log("Dashboard access granted for user:", user.uid);
@@ -42,20 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadDashboardComponents(db, user) {
-        // Use root-relative paths to prevent 404 errors
         fetch('/familyvalue/components/sidebar-dashboard.html')
             .then(res => res.ok ? res.text() : Promise.reject('Sidebar not found'))
             .then(data => {
                 const placeholder = document.getElementById('sidebar-placeholder');
                 if (placeholder) {
                     placeholder.innerHTML = data;
-                    // Translate the newly loaded sidebar
                     translatePage(localStorage.getItem('familyValueLang') || 'en');
                     setupSidebarListeners(db, user);
                 }
             }).catch(console.error);
         
-        // Also fetch the modals component needed for the dashboard
         fetch('/familyvalue/components/modals.html')
             .then(res => res.ok ? res.text() : Promise.reject('Modals not found'))
             .then(data => {
@@ -179,14 +183,12 @@ async function renderDashboardHome(contentArea, db, user) {
         </div>
     `;
 
-    // Translate the newly rendered content
     translatePage(localStorage.getItem('familyValueLang') || 'en');
 
     contentArea.querySelectorAll('.quick-action-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const view = e.currentTarget.dataset.view;
-            // Simulate a click on the main sidebar link to trigger the view change
             document.querySelector(`.main-container .sidebar-link[data-view="${view}"]`).click();
         });
     });

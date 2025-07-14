@@ -120,7 +120,6 @@ async function renderAdminDashboard(contentArea, db, user, familyId) {
         </div>
     `;
     attachAdminDashboardListeners(db, user, familyId);
-    // Translate the newly rendered content
     translatePage(localStorage.getItem('familyValueLang') || 'en');
 }
 
